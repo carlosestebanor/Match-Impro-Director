@@ -1,0 +1,58 @@
+MATCH DE IMPRO - DIRECTOR TÉCNICO
+Versión 1.0 (Build 2026)
+Desarrollado para: Corporación Acción Impro (Medellín, Colombia)
+Licencia: Creative Commons Atribución 4.0 (CC BY 4.0)
+
+===========================================
+¿QUÉ ES ESTO?
+===========================================
+Es una herramienta profesional para gestionar el marcador, cronómetro y audio
+de un espectáculo de Match de Improvisación. Permite proyectar un tablero
+personalizable en una segunda pantalla mientras el operador controla todo
+desde su monitor principal.
+
+===========================================
+INSTALACIÓN
+===========================================
+No requiere instalación. Solo descomprime el archivo ZIP y ejecuta:
+"MatchDirector.exe"
+
+Requisitos:
+- Windows 10 o superior.
+- Pantalla secundaria (Proyector/TV) conectada en modo "Extender Pantalla".
+
+===========================================
+GUÍA RÁPIDA DE USO
+===========================================
+
+1. INICIO:
+   - Al abrir, verás dos ventanas: el "Panel de Control" (gris) y el "Tablero Público" (negro).
+   - Arrastra la ventana negra hacia tu segunda pantalla (proyector).
+
+2. PANTALLA COMPLETA:
+   - Una vez la ventana negra esté en el proyector, haz DOBLE CLIC sobre ella
+     o presiona F11. Se expandirá automáticamente.
+
+3. PESTAÑA "EN VIVO":
+   - Cronómetro: Configura minutos/segundos y usa Play/Pausa.
+   - Equipos: Puedes editar los nombres escribiendo directamente en las cajas.
+   - Puntos/Faltas: Usa los botones +/-.
+   - Efectos: Abajo tienes 6 botones para lanzar sonidos instantáneos.
+
+4. PESTAÑA "DISEÑO":
+   - Fondo/Logo: Carga imágenes personalizadas.
+   - Geometría: Usa los deslizadores para mover los elementos si tu proyector corta la imagen.
+   - Colores/Fuentes: Personaliza la identidad gráfica del match.
+
+5. PESTAÑA "SONIDOS":
+   - Carga aquí tus archivos MP3 o WAV y asígnaless un nombre para usarlos en vivo.
+
+===========================================
+CRÉDITOS
+===========================================
+Este software es libre y gratuito. Si lo usas en tu compañía de teatro,
+te agradecemos darnos el crédito:
+
+"Software desarrollado por la Corporación Acción Impro, Medellín 2026".
+
+¡Que tengas una gran función!
