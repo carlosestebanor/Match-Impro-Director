@@ -1,4 +1,9 @@
+---
+🌍 **Idiomas / Languages:** [Castellano] | [English](README_EN.md)
+---
+
 # 🎭 Match Impro Director - Ultimate Edition
+
 
 ![Acción Impro](https://img.shields.io/badge/Developed%20by-Acción%20Impro-blue)
 ![License](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey)
@@ -34,3 +39,4 @@ El código está escrito en **Python 3.12**.
    ```bash
 
    pip install pillow pygame
+
