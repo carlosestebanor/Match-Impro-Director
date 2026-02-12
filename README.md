@@ -55,4 +55,5 @@ Desarrollado por la **Corporación Acción Impro**, Medellín, Colombia, 2026.
 [https://accionimpro.com.co/](https://accionimpro.com.co/)
 
 ---
-*Hecho por e para improvisadores.* 🎭
+*Hecho por y para improvisadores.* 🎭
+
