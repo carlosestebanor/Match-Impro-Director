@@ -5,7 +5,11 @@
 ![Version](https://img.shields.io/badge/Version-1.0.0--stable-green)
 
 Software profesional de dirección técnica diseñado específicamente para **Match de Improvisación**, competencias teatrales y eventos de artes escénicas en vivo. Desarrollado en Medellín, Colombia, por la **Corporación Acción Impro**.
+## 📸 Vista Previa
 
+| Tablero del Público | Panel de Control |
+| :---: | :---: |
+| ![Tablero](boardliveview.png) | ![Panel](controlpanelboard.png) |
 ## ✨ Características Principales
 
 - **Doble Pantalla (Multimonitor):** Controla todo desde tu laptop mientras el público ve solo el tablero profesional en el proyector.
@@ -28,4 +32,5 @@ El código está escrito en **Python 3.12**.
 1. Clona el repositorio.
 2. Instala las dependencias:
    ```bash
+
    pip install pillow pygame
