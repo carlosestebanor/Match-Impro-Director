@@ -24,6 +24,25 @@ Software profesional de dirección técnica diseñado específicamente para **Ma
 - **Control en Vivo:** Edita nombres de equipos, suma puntos y gestiona faltas (máximo 3 con estilo semáforo) sin pausar el show.
 - **Soundbar Integrada:** Lanzador de 6 slots de efectos de sonido (MP3/WAV) con nombres personalizables.
 - **Cronómetro Flexible:** Reloj con cuenta regresiva que puedes ubicar arriba o abajo y ocultar según la dinámica del match.
+- **Control Remoto por WiFi:** Maneja puntos, faltas, cronómetro y efectos desde el celular o la tablet, sin quedarte pegado al computador.
+
+## 📡 Control Remoto (Mando por WiFi)
+
+Permite que un asistente (o tú mismo desde la sala) opere el marcador desde el navegador de un celular. No requiere instalar nada en el teléfono ni salir a internet: todo ocurre dentro de tu red local.
+
+1. Conecta el computador y el celular a la **misma red WiFi**.
+2. En el panel de control abre la pestaña **📡 REMOTO** y presiona **ENCENDER**.
+3. Escribe en el navegador del celular la dirección que aparece (por ejemplo `http://192.168.1.20:8770`).
+4. Ingresa el **PIN** de 6 dígitos que muestra el panel. El celular lo recuerda para las siguientes veces.
+
+Desde el mando puedes sumar/restar puntos, marcar y quitar faltas, fijar el cronómetro, dar inicio/pausa y lanzar los 6 efectos de sonido. El tablero del proyector se actualiza al instante.
+
+**Recomendaciones de seguridad**
+- Cualquier persona conectada a esa red puede llegar a la página del mando; por eso está protegido con PIN.
+- En redes públicas o compartidas, genera un **PIN nuevo** antes de la función con el botón 🔄.
+- Apaga el servidor al terminar el show.
+- Si Windows pregunta por el Firewall la primera vez, permite el acceso en **redes privadas**.
+- Si el puerto 8770 está ocupado, cámbialo en la misma pestaña (por ejemplo 8771).
 
 ## 🚀 Instalación y Uso
 
@@ -38,6 +57,8 @@ El código está escrito en **Python 3.12**.
 1. Clona el repositorio.
 2. Instala las dependencias: `pip install pillow pygame`
 3. Ejecuta el script principal: `python match_director_source.py`
+
+> El control remoto vive en `remote_control.py` y usa **solo la librería estándar** (no añade dependencias). Mantén ese archivo junto a `match_director_source.py`; si falta, el programa arranca igual pero la pestaña 📡 REMOTO queda deshabilitada.
 
 ## 🎨 Personalización
 En la pestaña **DISEÑO** puedes:

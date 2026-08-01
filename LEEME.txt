@@ -47,6 +47,23 @@ GUÍA RÁPIDA DE USO
 5. PESTAÑA "SONIDOS":
    - Carga aquí tus archivos MP3 o WAV y asígnaless un nombre para usarlos en vivo.
 
+6. PESTAÑA "REMOTO" (Mando por WiFi):
+   - Sirve para manejar el marcador desde un celular o tablet.
+   - Conecta el computador y el celular a la MISMA red WiFi.
+   - Presiona "ENCENDER" y escribe en el navegador del celular la dirección
+     que aparece en pantalla (ejemplo: http://192.168.1.20:8770).
+   - Ingresa el PIN de 6 dígitos que muestra el panel. El celular lo recuerda.
+   - Desde el celular puedes: sumar/restar puntos, marcar y quitar faltas,
+     fijar el cronómetro, dar inicio/pausa y lanzar los 6 efectos de sonido.
+
+   IMPORTANTE (seguridad):
+   - Cualquiera conectado a esa red WiFi puede abrir la página del mando,
+     por eso está protegida con PIN. En redes públicas genera un PIN nuevo
+     antes de la función y apaga el servidor al terminar el show.
+   - Si Windows pregunta por el Firewall la primera vez, permite el acceso
+     en "redes privadas".
+   - Si el puerto está ocupado, cámbialo en la misma pestaña (ej. 8771).
+
 ===========================================
 CRÉDITOS
 ===========================================

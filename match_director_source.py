@@ -28,6 +28,19 @@ try:
 except:
     print("Advertencia: No se detectó dispositivo de audio. El modo sonido estará desactivado.")
 
+# --- CONTROL REMOTO (opcional) ---
+# Módulo propio, solo librería estándar. Si falta el archivo, la app sigue funcionando.
+try:
+    from remote_control import ControlRemoto
+    REMOTE_ENABLED = True
+except Exception:
+    ControlRemoto = None
+    REMOTE_ENABLED = False
+    print("Advertencia: No se encontró 'remote_control.py'. El mando a distancia estará desactivado.")
+
+# Cada cuánto (ms) el panel revisa los comandos que llegaron desde el celular.
+REMOTE_POLL_MS = 120
+
 class ImproMatchApp:
     def __init__(self):
         # Configuración de la Ventana Principal (Panel de Control)
@@ -80,7 +93,13 @@ class ImproMatchApp:
         self.var_outline = tk.BooleanVar(value=True) # Borde negro en texto
         
         self.is_fullscreen = False # Estado de pantalla completa
-        
+
+        # --- CONTROL REMOTO ---
+        self.remoto = None                    # Instancia de ControlRemoto cuando está encendido
+        self.remote_port_var = tk.StringVar(value="8770")
+        self.remote_pin_var = tk.StringVar(value="------")
+        self.remote_url_var = tk.StringVar(value="Servidor apagado")
+
         # --- INICIALIZACIÓN DE VENTANAS ---
         # Ventana Secundaria (Proyector)
         self.win_proj = tk.Toplevel(self.root)
@@ -105,8 +124,18 @@ class ImproMatchApp:
         self.reconstruir_equipos_data()
         self.construir_panel_control()
         self.redibujar_pantalla()
-        
+
+        # Cierre ordenado (apaga el servidor remoto antes de salir)
+        self.root.protocol("WM_DELETE_WINDOW", self.cerrar_app)
+        # Atención permanente a los comandos que llegan del celular
+        self.root.after(REMOTE_POLL_MS, self.bombear_comandos_remotos)
+
         self.root.mainloop() # Bucle principal de la aplicación
+
+    def cerrar_app(self):
+        """Apaga el mando a distancia y cierra la aplicación."""
+        self.detener_remoto()
+        self.root.destroy()
 
     # --- LÓGICA DE DATOS ---
     def reconstruir_equipos_data(self):
@@ -277,6 +306,66 @@ class ImproMatchApp:
             
             # Test Play
             tk.Button(fr_row, text="▶", command=lambda x=i: self.play_sound(x), bg="#444", fg="white").pack(side="right", padx=5)
+
+        # === PESTAÑA 4: CONTROL REMOTO ===
+        tab_remote = tk.Frame(nb, bg="#222")
+        nb.add(tab_remote, text="📡 REMOTO")
+        self.construir_pestana_remoto(tab_remote)
+
+    def construir_pestana_remoto(self, parent):
+        """Pestaña para publicar el mando a distancia en la red local."""
+        tk.Label(parent, text="MANDO A DISTANCIA (WiFi)", bg="#222", fg="#00d4ff",
+                 font=("Arial", 12, "bold")).pack(pady=(10, 2))
+        tk.Label(parent, text="Controla puntos, faltas, cronómetro y efectos\ndesde tu celular o tablet.",
+                 bg="#222", fg="#aaa", font=("Arial", 9), justify="center").pack(pady=(0, 10))
+
+        if not REMOTE_ENABLED:
+            tk.Label(parent, text="⚠ Falta el archivo 'remote_control.py'.\nDescárgalo junto al programa para usar esta función.",
+                     bg="#222", fg="#ff8888", font=("Arial", 9), justify="center").pack(pady=20)
+            return
+
+        # Puerto + interruptor
+        fr_cfg = tk.LabelFrame(parent, text="Servidor", bg="#222", fg="white")
+        fr_cfg.pack(fill="x", padx=10, pady=5)
+
+        f_port = tk.Frame(fr_cfg, bg="#222"); f_port.pack(fill="x", padx=5, pady=5)
+        tk.Label(f_port, text="Puerto:", bg="#222", fg="#aaa").pack(side="left")
+        self.entry_puerto = tk.Entry(f_port, textvariable=self.remote_port_var, width=6, justify="center")
+        self.entry_puerto.pack(side="left", padx=5)
+
+        self.btn_remoto = tk.Button(f_port, text="▶ ENCENDER", bg="#1d7a4a", fg="white",
+                                    font=("Arial", 9, "bold"), command=self.alternar_remoto)
+        self.btn_remoto.pack(side="right", padx=5)
+
+        # Datos de conexión
+        fr_conn = tk.LabelFrame(parent, text="Datos de conexión", bg="#222", fg="#00ff88")
+        fr_conn.pack(fill="x", padx=10, pady=5)
+
+        tk.Label(fr_conn, text="Dirección (escríbela en el navegador del celular):",
+                 bg="#222", fg="#aaa", font=("Arial", 8)).pack(anchor="w", padx=5, pady=(5, 0))
+        self.lbl_url = tk.Entry(fr_conn, textvariable=self.remote_url_var, state="readonly",
+                                readonlybackground="#111", fg="#00d4ff", justify="center",
+                                font=("Consolas", 12, "bold"), bd=0)
+        self.lbl_url.pack(fill="x", padx=5, pady=3)
+
+        f_pin = tk.Frame(fr_conn, bg="#222"); f_pin.pack(fill="x", padx=5, pady=5)
+        tk.Label(f_pin, text="PIN:", bg="#222", fg="#aaa").pack(side="left")
+        tk.Label(f_pin, textvariable=self.remote_pin_var, bg="#222", fg="#ffcc00",
+                 font=("Consolas", 18, "bold")).pack(side="left", padx=8)
+        tk.Button(f_pin, text="🔄 Nuevo PIN", bg="#444", fg="white", font=("Arial", 8),
+                  command=self.regenerar_pin).pack(side="right")
+
+        tk.Label(parent, justify="left", bg="#222", fg="#888", font=("Arial", 8), anchor="w",
+                 text=("CÓMO USARLO\n"
+                       "1. Conecta el computador y el celular a la MISMA red WiFi.\n"
+                       "2. Presiona ENCENDER y escribe la dirección en el navegador del celular.\n"
+                       "3. Ingresa el PIN una sola vez; el celular lo recuerda.\n\n"
+                       "SEGURIDAD\n"
+                       "· Cualquiera en esa red puede llegar al mando, por eso existe el PIN.\n"
+                       "· En redes públicas genera un PIN nuevo antes de la función.\n"
+                       "· Apaga el servidor al terminar el show.\n"
+                       "· Si Windows pregunta por el Firewall, permite el acceso en red privada.")
+                 ).pack(fill="x", padx=15, pady=10)
 
     # --- LÓGICA DE NEGOCIO ---
     def update_sound_name(self, idx, new_name):
@@ -461,6 +550,98 @@ class ImproMatchApp:
         if self.corriendo and self.tiempo_restante > 0:
             self.tiempo_restante -= 1; self.redibujar_pantalla(); self.root.after(1000, self.loop)
         elif self.tiempo_restante == 0: self.corriendo = False
+
+    # --- CONTROL REMOTO (SERVIDOR + PUENTE CON TKINTER) ---
+    def alternar_remoto(self):
+        """Enciende o apaga el mando a distancia según su estado actual."""
+        if self.remoto and self.remoto.activo: self.detener_remoto()
+        else: self.iniciar_remoto()
+
+    def iniciar_remoto(self):
+        if not REMOTE_ENABLED: return
+        try:
+            puerto = int(self.remote_port_var.get())
+            if not (1024 <= puerto <= 65535): raise ValueError
+        except ValueError:
+            messagebox.showerror("Puerto inválido", "Escribe un número de puerto entre 1024 y 65535.")
+            return
+
+        # Reutilizamos el PIN ya mostrado para no obligar a re-emparejar el celular.
+        pin_previo = self.remoto.pin if self.remoto else None
+        self.remoto = ControlRemoto(self.estado_para_remoto, puerto=puerto, pin=pin_previo)
+        try:
+            self.remoto.iniciar()
+        except OSError as e:
+            self.remoto = None
+            messagebox.showerror("No se pudo encender",
+                                 f"El puerto {puerto} no está disponible.\n\nPrueba con otro (ej. 8771).\n\nDetalle: {e}")
+            return
+
+        self.remote_pin_var.set(self.remoto.pin)
+        self.remote_url_var.set(self.remoto.url)
+        self.btn_remoto.config(text="⏹ APAGAR", bg="#a32d2d")
+        self.entry_puerto.config(state="disabled")
+
+    def detener_remoto(self):
+        if not self.remoto: return
+        self.remoto.detener()
+        self.remote_url_var.set("Servidor apagado")
+        # Los widgets ya no existen si estamos cerrando la aplicación.
+        try:
+            self.btn_remoto.config(text="▶ ENCENDER", bg="#1d7a4a")
+            self.entry_puerto.config(state="normal")
+        except tk.TclError:
+            pass
+
+    def regenerar_pin(self):
+        """Cambia el PIN. Los celulares ya emparejados deberán escribir el nuevo."""
+        if not REMOTE_ENABLED: return
+        from remote_control import generar_pin
+        nuevo = generar_pin()
+        if self.remoto: self.remoto.pin = nuevo
+        self.remote_pin_var.set(nuevo)
+
+    def estado_para_remoto(self):
+        """Foto del estado actual para el celular. Se lee desde el hilo del servidor:
+        solo datos simples, nunca widgets."""
+        return {
+            'equipos': [{'nombre': eq['nombre'], 'puntos': eq['puntos'], 'faltas': eq['faltas']}
+                        for eq in self.equipos],
+            'timer': {'restante': self.tiempo_restante, 'corriendo': self.corriendo},
+            'sonidos': [{'nombre': s['name'], 'cargado': s['obj'] is not None} for s in self.sonidos],
+        }
+
+    def bombear_comandos_remotos(self):
+        """Ejecuta en el hilo de Tkinter los comandos que llegaron por la red."""
+        if self.remoto and self.remoto.activo:
+            for comando in self.remoto.vaciar_comandos():
+                try: self.aplicar_comando_remoto(comando)
+                except Exception as e: print(f"Comando remoto ignorado ({comando}): {e}")
+        self.root.after(REMOTE_POLL_MS, self.bombear_comandos_remotos)
+
+    def aplicar_comando_remoto(self, cmd):
+        """Traduce un comando del celular a la acción equivalente del panel."""
+        accion = cmd.get('accion')
+
+        if accion in ('puntos', 'faltas'):
+            idx = int(cmd.get('equipo', -1))
+            delta = 1 if int(cmd.get('delta', 1)) >= 0 else -1
+            if 0 <= idx < len(self.equipos):
+                self.mod(idx, delta, 'p' if accion == 'puntos' else 'f')
+
+        elif accion == 'timer_start': self.iniciar_tiempo()
+        elif accion == 'timer_pause': self.pausar_tiempo()
+        elif accion == 'timer_set':
+            segundos = max(0, min(int(cmd.get('segundos', 0)), 99 * 60 + 59))
+            self.tiempo_restante = segundos
+            # Reflejamos el cambio en las casillas del panel para no descuadrar al operador.
+            self.e_min.delete(0, "end"); self.e_min.insert(0, str(segundos // 60))
+            self.e_sec.delete(0, "end"); self.e_sec.insert(0, f"{segundos % 60:02d}")
+            self.redibujar_pantalla()
+
+        elif accion == 'sonido':
+            slot = int(cmd.get('slot', -1))
+            if 0 <= slot < len(self.sonidos): self.play_sound(slot)
 
 if __name__ == "__main__":
     ImproMatchApp()

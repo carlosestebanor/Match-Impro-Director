@@ -24,6 +24,25 @@ Professional technical suite designed for **Improvisational Match** shows, theat
 - **Live Control:** Edit team names, update scores, and manage fouls (up to 3 with "traffic light" style) without pausing the show.
 - **Integrated Soundbar:** 6-slot sound effect launcher (MP3/WAV) with customizable button names.
 - **Configurable Timer:** Countdown clock that can be placed at the top or bottom, or hidden depending on the match dynamic.
+- **WiFi Remote Control:** Drive scores, fouls, timer and sound effects from a phone or tablet instead of staying glued to the computer.
+
+## 📡 Remote Control (WiFi Handheld)
+
+Lets an assistant (or you, from the audience floor) run the scoreboard straight from a phone browser. Nothing to install on the phone and no internet required: everything stays inside your local network.
+
+1. Connect the computer and the phone to the **same WiFi network**.
+2. In the control panel open the **📡 REMOTO** tab and press **ENCENDER** (turn on).
+3. Type the displayed address into the phone's browser (e.g. `http://192.168.1.20:8770`).
+4. Enter the 6-digit **PIN** shown in the panel. The phone remembers it for next time.
+
+The handheld can add/remove points, add and clear fouls, set the timer, start/pause it, and fire the 6 sound effects. The projector board updates instantly.
+
+**Security notes**
+- Anyone on that network can reach the handheld page, which is why it is PIN protected.
+- On public or shared networks, generate a **new PIN** before the show with the 🔄 button.
+- Turn the server off when the show ends.
+- If Windows asks about the Firewall the first time, allow access on **private networks**.
+- If port 8770 is taken, change it in the same tab (e.g. 8771).
 
 ## 🚀 Installation and Usage
 
@@ -38,6 +57,8 @@ The code is written in **Python 3.12**.
 1. Clone the repository.
 2. Install dependencies: `pip install pillow pygame`
 3. Run the main script: `python match_director_source.py`
+
+> The remote control lives in `remote_control.py` and uses the **standard library only** (no extra dependencies). Keep that file next to `match_director_source.py`; if it is missing the program still starts, but the 📡 REMOTO tab stays disabled.
 
 ## 🎨 Customization
 In the **DESIGN** tab you can:
