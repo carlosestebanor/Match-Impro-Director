@@ -1,0 +1,35 @@
+# Match Impro Director · configuración para Apache (Hostinger)
+# Colocar junto a index.html, en public_html/tablero/
+
+# --- Tipos MIME ---------------------------------------------------------
+# El panel se carga como módulo ES. Si el servidor no anuncia el .js con el
+# tipo correcto, el navegador se niega a ejecutarlo.
+AddType application/javascript .js
+AddType text/css .css
+AddType application/json .json
+
+# --- Compresión ---------------------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+# --- Caché --------------------------------------------------------------
+# El HTML caduca pronto para que las actualizaciones lleguen rápido; el
+# código y los estilos se cachean más tiempo porque cambian menos.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 1 hour"
+  ExpiresByType text/css "access plus 7 days"
+  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType image/png "access plus 30 days"
+  ExpiresByType image/jpeg "access plus 30 days"
+</IfModule>
+
+# --- Seguridad básica ---------------------------------------------------
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# No listar el contenido de las carpetas
+Options -Indexes

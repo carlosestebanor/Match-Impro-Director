@@ -27,17 +27,70 @@ privacidad de usuarios ni cumplir con nada especial.
 
 ---
 
-## Opción A · Subir la carpeta y enlazarla (la más simple)
+## Opción A · Con un solo comando (recomendada si tienes SSH)
+
+En la carpeta `web/` hay dos scripts listos. Se ejecutan **desde tu computador**,
+no desde el servidor.
+
+1. Saca los datos de conexión en **hPanel → Avanzado → Acceso SSH** y expórtalos:
+
+   ```bash
+   export HOSTINGER_USUARIO=u123456789
+   export HOSTINGER_SERVIDOR=193.203.xxx.xxx
+   export HOSTINGER_PUERTO=65002
+   export HOSTINGER_DESTINO=domains/accionimpro.com.co/public_html/tablero
+   ```
+
+2. Haz primero un **simulacro**: enseña exactamente qué subiría, sin tocar nada.
+
+   ```bash
+   cd web
+   ./desplegar.sh
+   ```
+
+3. Si la lista te cuadra, súbelo de verdad:
+
+   ```bash
+   ./desplegar.sh --aplicar
+   ```
+
+4. Comprueba que todo quedó bien publicado:
+
+   ```bash
+   ./verificar.sh https://accionimpro.com.co/tablero/
+   ```
+
+El script solo sincroniza los 8 archivos de la aplicación y **se niega a
+ejecutarse si la ruta de destino apunta a `public_html`**: usa `rsync --delete`,
+así que apuntar a la raíz borraría WordPress entero.
+
+> **Nota sobre Claude Code:** si le pides el despliegue a una sesión que corre
+> **en tu computador** (la CLI o la app de escritorio), puede ejecutar estos
+> mismos pasos por ti, porque ahí sí ve tus claves SSH. Una sesión en la nube
+> (Claude Code web) corre en un contenedor aislado, sin acceso a tu `~/.ssh`
+> ni salida por el puerto 22, así que no puede desplegar.
+
+---
+
+## Opción B · Subir la carpeta a mano (sin terminal)
+
+Genera primero el paquete:
+
+```bash
+cd web && ./desplegar.sh --empaquetar     # crea tablero-web.zip (~68 KB)
+```
 
 1. Entra al **hPanel de Hostinger → Archivos → Administrador de archivos**.
 2. Abre `public_html`.
 3. Crea una carpeta llamada `tablero`.
-4. Sube dentro el contenido de esta carpeta `web/`, manteniendo la estructura:
+4. Sube el ZIP dentro, usa **«Extraer»** y borra después el ZIP del servidor.
+   Debe quedar así:
 
    ```
    public_html/tablero/
      ├── index.html
      ├── tablero.html
+     ├── .htaccess
      ├── css/estilos.css
      └── js/estado.js, tablero.js, panel.js, almacen.js
    ```
@@ -46,16 +99,20 @@ privacidad de usuarios ni cumplir con nada especial.
 
 6. En WordPress, añade el enlace donde quieras (menú, botón, entrada de blog).
 
+> El `.htaccess` incluido ya trae el tipo MIME de los `.js`, la compresión y la
+> caché. Si tu administrador de archivos oculta los archivos que empiezan por
+> punto, activa «Mostrar archivos ocultos» antes de subirlo.
+
 > **Importante:** sube los archivos tal cual, sin renombrar carpetas. El panel
 > carga los `.js` por ruta relativa y abre `tablero.html` desde la misma carpeta.
 
 ---
 
-## Opción B · Una página de WordPress que lo contenga
+## Opción C · Una página de WordPress que lo contenga
 
 Si prefieres que la barra de navegación del sitio siga visible:
 
-1. Haz primero la Opción A.
+1. Haz primero la Opción A o B.
 2. Crea una página nueva en WordPress (por ejemplo «Tablero de Match»).
 3. Añade un bloque **HTML personalizado** con:
 
@@ -70,7 +127,7 @@ Si prefieres que la barra de navegación del sitio siga visible:
 
 **Advertencia:** dentro de un `iframe`, algunos navegadores bloquean la ventana
 emergente del tablero. Si ocurre, deja también visible el enlace directo a
-`/tablero/` como alternativa. Por eso recomendamos la Opción A como principal
+`/tablero/` como alternativa. Por eso recomendamos la Opción A o B como principal
 y el iframe solo como vitrina.
 
 ---
@@ -81,24 +138,9 @@ Ninguno especial, pero conviene comprobar:
 
 - **HTTPS activo.** Hostinger lo da gratis con Let's Encrypt. Hace falta para
   que funcionen la pantalla completa y el guardado en el navegador.
-- **Tipo MIME de los `.js`.** Apache lo sirve bien por defecto. Si el navegador
-  se queja de que el módulo no carga, añade esto a `public_html/tablero/.htaccess`:
-
-  ```apache
-  AddType application/javascript .js
-  ```
-
-- **Caché.** Para que la página cargue instantáneamente en visitas siguientes,
-  el mismo `.htaccess` puede llevar:
-
-  ```apache
-  <IfModule mod_expires.c>
-    ExpiresActive On
-    ExpiresByType text/css "access plus 7 days"
-    ExpiresByType application/javascript "access plus 7 days"
-    ExpiresByType text/html "access plus 1 hour"
-  </IfModule>
-  ```
+- **Tipo MIME, compresión y caché.** Ya vienen resueltos en el `.htaccess` que
+  se sube con la aplicación. Solo asegúrate de que ese archivo llegue al
+  servidor: empieza por punto y algunos gestores de archivos lo ocultan.
 
 ---
 
