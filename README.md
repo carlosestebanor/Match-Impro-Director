@@ -116,8 +116,9 @@ web/
 - Los presets `.json` son **compatibles con la versión de escritorio**.
 - El mando por WiFi desde el celular es exclusivo de la versión de escritorio.
 
-Instrucciones para publicarla en WordPress/Hostinger:
-[`web/LEEME-WORDPRESS.md`](web/LEEME-WORDPRESS.md).
+**Para publicarla:**
+- [`web/PASO-A-PASO.md`](web/PASO-A-PASO.md) — guía sencilla, sin terminal (10 min).
+- [`web/LEEME-WORDPRESS.md`](web/LEEME-WORDPRESS.md) — versión técnica, con script de despliegue.
 
 ## 🧱 Estructura del Proyecto
 

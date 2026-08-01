@@ -116,7 +116,9 @@ web/
 - `.json` presets are **interchangeable with the desktop version**.
 - The WiFi phone remote is desktop-only.
 
-Deployment instructions (in Spanish): [`web/LEEME-WORDPRESS.md`](web/LEEME-WORDPRESS.md).
+**To publish it** (guides in Spanish):
+- [`web/PASO-A-PASO.md`](web/PASO-A-PASO.md) — simple, no terminal needed (10 min).
+- [`web/LEEME-WORDPRESS.md`](web/LEEME-WORDPRESS.md) — technical, with a deploy script.
 
 ## 🧱 Project Layout
 

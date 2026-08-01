@@ -5,6 +5,9 @@ Guía para poner la versión web en el sitio de WordPress alojado en Hostinger.
 La aplicación es **HTML, CSS y JavaScript planos**: no necesita PHP, ni base de
 datos, ni Node, ni ningún plugin. Se sube como un archivo más y funciona.
 
+> **¿Prefieres una guía sin terminal, paso a paso y con capturas de lo que verás?**
+> Usa [`PASO-A-PASO.md`](PASO-A-PASO.md). Este documento es la versión técnica.
+
 ---
 
 ## Qué es esta versión
