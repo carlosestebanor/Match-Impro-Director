@@ -60,12 +60,25 @@ REFINAR_MS = 220          # Espera tras redimensionar para reescalar en alta cal
 AUTOGUARDADO_MS = 3000    # Espera tras el último cambio para guardar preferencias
 
 # --- PALETA DEL PANEL ---
+# Los grises de texto están elegidos para superar el contraste mínimo AA (4.5:1)
+# sobre sus fondos: el panel se opera en salas a oscuras y los tonos de la v1
+# (#666 sobre #333 daba 2.2:1) resultaban ilegibles.
 FONDO = "#222222"
 FONDO_FILA = "#333333"
 ACENTO = "#00d4ff"
 VERDE = "#1d7a4a"
 ROJO = "#a32d2d"
 COLOR_BOTON_FX = "#333333"
+
+TEXTO = "#ffffff"           # 15.9:1 sobre el panel
+TEXTO_SUAVE = "#c4c4c4"     #  9.2:1 sobre el panel
+TEXTO_TENUE = "#a8a8a8"     #  6.7:1 sobre el panel · 5.3:1 sobre las filas
+AVISO_OK = "#5fe08a"
+AVISO_ALERTA = "#ffd166"
+AVISO_ERROR = "#ff7b72"
+
+# Vista previa del tablero dentro del panel
+PREVIEW_ANCHO = 244
 
 
 class ImproMatchApp:
@@ -172,74 +185,94 @@ class ImproMatchApp:
         tab_ayuda = tk.Frame(nb, bg=FONDO); nb.add(tab_ayuda, text="❔ AYUDA")
         self.construir_tab_ayuda(tab_ayuda)
 
-        # Barra de estado inferior
-        tk.Label(self.root, textvariable=self.estado_var, bg="#1a1a1a", fg="#888",
-                 anchor="w", font=("Arial", 8)).pack(fill="x", side="bottom")
+        # Barra de estado inferior: es el único canal de aviso del programa,
+        # así que va con tamaño legible y color según la importancia.
+        self.lbl_estado = tk.Label(self.root, textvariable=self.estado_var, bg="#1a1a1a",
+                                   fg=TEXTO_TENUE, anchor="w", font=("Arial", 9),
+                                   padx=8, pady=3)
+        self.lbl_estado.pack(fill="x", side="bottom")
 
     def construir_barra_superior(self):
         """Acciones siempre a mano: presets, deshacer y pantalla completa."""
         barra = tk.Frame(self.root, bg="#1a1a1a")
         barra.pack(fill="x", padx=5, pady=5)
 
-        def boton(texto, comando, color=FONDO_FILA, ancho=None):
-            b = tk.Button(barra, text=texto, command=comando, bg=color, fg="white",
-                          font=("Arial", 8, "bold"), bd=0, padx=6, pady=4)
-            if ancho:
-                b.config(width=ancho)
-            b.pack(side="left", padx=2)
+        def boton(texto, comando, color=FONDO_FILA, lado="left"):
+            b = tk.Button(barra, text=texto, command=comando, bg=color, fg=TEXTO,
+                          font=("Arial", 8, "bold"), bd=0, padx=7, pady=5,
+                          activebackground="#4a4a4a")
+            b.pack(side=lado, padx=2)
             return b
 
+        def separador():
+            tk.Frame(barra, bg="#3a3a3a", width=1).pack(side="left", fill="y",
+                                                        padx=6, pady=3)
+
+        # Acciones frecuentes de la función
         self.btn_deshacer = boton("↩ Deshacer", self.deshacer)
         self.btn_rehacer = boton("↪ Rehacer", self.rehacer)
-        boton("🧹 Reiniciar", self.reiniciar_marcador, "#5a3030")
+        separador()
         boton("💾 Guardar", self.guardar_preset_como)
         boton("📂 Cargar", self.cargar_preset_desde)
-        boton("⛶ Pantalla completa", self.alternar_pantalla_completa, ACENTO).config(fg="black")
+
+        # Pantalla completa a la derecha, y la acción destructiva al extremo
+        # opuesto de Deshacer para que un clic errado no borre el marcador.
+        boton("⛶ Pantalla completa", self.alternar_pantalla_completa,
+              ACENTO, lado="right").config(fg="black")
+        boton("🧹 Reiniciar", self.reiniciar_marcador, "#5a3030", lado="right")
         self.actualizar_botones_historial()
 
     # --- PESTAÑA: EN VIVO ---------------------------------------------------
     def construir_tab_en_vivo(self, parent):
-        # Cronómetro
-        fr_t = tk.LabelFrame(parent, text="CRONÓMETRO", font=("Arial", 10, "bold"),
-                             bg=FONDO, fg="white")
-        fr_t.pack(fill="x", padx=10, pady=5)
+        # Fila superior: vista previa + cronómetro, lado a lado para ahorrar alto
+        fila_sup = tk.Frame(parent, bg=FONDO)
+        fila_sup.pack(fill="x", padx=10, pady=5)
+
+        self.construir_vista_previa(fila_sup)
+
+        fr_t = tk.LabelFrame(fila_sup, text="CRONÓMETRO", font=("Arial", 10, "bold"),
+                             bg=FONDO, fg=TEXTO)
+        fr_t.pack(side="left", fill="both", expand=True)
+
+        # Reloj grande: el operador no debería tener que mirar el proyector.
+        self.lbl_reloj = tk.Label(fr_t, text=self.estado.cronometro.texto(), bg=FONDO,
+                                  fg=ACENTO, font=("Consolas", 30, "bold"))
+        self.lbl_reloj.pack(pady=(4, 0))
 
         f_in = tk.Frame(fr_t, bg=FONDO); f_in.pack(pady=2)
-        self.e_min = tk.Entry(f_in, width=3, font=("Arial", 14), justify="center")
-        self.e_sec = tk.Entry(f_in, width=3, font=("Arial", 14), justify="center")
+        self.e_min = tk.Entry(f_in, width=3, font=("Arial", 13), justify="center")
+        self.e_sec = tk.Entry(f_in, width=3, font=("Arial", 13), justify="center")
         duracion = self.estado.cronometro.duracion
         self.e_min.insert(0, str(duracion // 60))
         self.e_sec.insert(0, f"{duracion % 60:02d}")
         self.e_min.pack(side="left")
-        tk.Label(f_in, text=":", bg=FONDO, fg="white").pack(side="left")
+        tk.Label(f_in, text=":", bg=FONDO, fg=TEXTO).pack(side="left")
         self.e_sec.pack(side="left")
-
-        # Reloj grande: el operador no debería tener que mirar el proyector.
-        self.lbl_reloj = tk.Label(fr_t, text=self.estado.cronometro.texto(), bg=FONDO,
-                                  fg=ACENTO, font=("Consolas", 26, "bold"))
-        self.lbl_reloj.pack(pady=2)
+        tk.Button(f_in, text="SET", command=self.set_tiempo, width=4,
+                  font=("Arial", 8, "bold")).pack(side="left", padx=6)
 
         f_btn = tk.Frame(fr_t, bg=FONDO); f_btn.pack(pady=4)
-        tk.Button(f_btn, text="SET", command=self.set_tiempo, width=5).pack(side="left")
-        tk.Button(f_btn, text="▶ INICIO", bg="#afa", width=8,
-                  command=self.iniciar_tiempo).pack(side="left", padx=4)
-        tk.Button(f_btn, text="⏸ PAUSA", bg="#fea", width=8,
-                  command=self.pausar_tiempo).pack(side="left")
+        tk.Button(f_btn, text="▶ INICIO", bg="#afa", width=9, height=2,
+                  font=("Arial", 9, "bold"),
+                  command=self.iniciar_tiempo).pack(side="left", padx=3)
+        tk.Button(f_btn, text="⏸ PAUSA", bg="#fea", width=9, height=2,
+                  font=("Arial", 9, "bold"),
+                  command=self.pausar_tiempo).pack(side="left", padx=3)
 
-        f_aj = tk.Frame(fr_t, bg=FONDO); f_aj.pack(pady=(0, 5))
-        for etiqueta, delta in (("-30s", -30), ("-10s", -10), ("+10s", 10), ("+30s", 30)):
-            tk.Button(f_aj, text=etiqueta, width=5, bg=FONDO_FILA, fg="white",
+        f_aj = tk.Frame(fr_t, bg=FONDO); f_aj.pack(pady=(0, 6))
+        for etiqueta, delta in (("−30s", -30), ("−10s", -10), ("+10s", 10), ("+30s", 30)):
+            tk.Button(f_aj, text=etiqueta, width=4, bg=FONDO_FILA, fg=TEXTO,
                       font=("Arial", 8), command=lambda d=delta: self.ajustar_tiempo(d)
                       ).pack(side="left", padx=2)
 
         # Número de equipos
         fr_cfg = tk.Frame(parent, bg=FONDO); fr_cfg.pack(fill="x", padx=10)
-        tk.Label(fr_cfg, text="Equipos:", fg="#aaa", bg=FONDO).pack(side="left")
+        tk.Label(fr_cfg, text="Equipos:", fg=TEXTO_SUAVE, bg=FONDO).pack(side="left")
         tk.Spinbox(fr_cfg, from_=MIN_EQUIPOS, to=MAX_EQUIPOS, textvariable=self.num_equipos_var,
                    width=3, state="readonly",
                    command=self.actualizar_estructura_equipos).pack(side="left", padx=5)
-        tk.Label(fr_cfg, text=f"(máx. {MAX_FALTAS} faltas por equipo)", fg="#666", bg=FONDO,
-                 font=("Arial", 8)).pack(side="left")
+        tk.Label(fr_cfg, text=f"(máx. {MAX_FALTAS} faltas por equipo)", fg=TEXTO_TENUE,
+                 bg=FONDO, font=("Arial", 8)).pack(side="left")
 
         # Tiras de equipos
         self.frame_container_eq = tk.Frame(parent, bg=FONDO)
@@ -262,7 +295,7 @@ class ImproMatchApp:
             self.botones_sonido_live.append(btn)
 
         f_vol = tk.Frame(fr_snd, bg=FONDO); f_vol.pack(fill="x", pady=(4, 2))
-        tk.Label(f_vol, text="Volumen", bg=FONDO, fg="#aaa", font=("Arial", 8)).pack(side="left")
+        tk.Label(f_vol, text="Volumen", bg=FONDO, fg=TEXTO_SUAVE, font=("Arial", 8)).pack(side="left")
         self.scale_volumen = tk.Scale(f_vol, from_=0, to=100, orient="horizontal", bg=FONDO,
                                       fg="white", highlightthickness=0, bd=0, showvalue=False,
                                       command=self.cambiar_volumen)
@@ -271,6 +304,36 @@ class ImproMatchApp:
         tk.Button(f_vol, text="⏹ Silenciar", bg=FONDO_FILA, fg="white", font=("Arial", 8),
                   command=self.detener_sonidos).pack(side="right")
 
+
+    def construir_vista_previa(self, parent):
+        """
+        Miniatura en vivo de lo que está viendo el público.
+
+        Una vez el tablero está a pantalla completa en el proyector, el operador
+        deja de verlo: normalmente está de espaldas a la pantalla. Esta vista
+        evita tener que girarse para comprobar qué se está proyectando.
+        """
+        self.marco_preview = tk.LabelFrame(parent, text="LO QUE VE EL PÚBLICO",
+                                           font=("Arial", 8, "bold"), bg=FONDO,
+                                           fg=TEXTO_TENUE)
+        self.marco_preview.pack(side="left", fill="y", padx=(0, 8))
+
+        self.canvas_preview = tk.Canvas(self.marco_preview, bg="black",
+                                        width=PREVIEW_ANCHO,
+                                        height=int(PREVIEW_ANCHO * 9 / 16),
+                                        highlightthickness=1,
+                                        highlightbackground="#444")
+        self.canvas_preview.pack(padx=4, pady=(2, 4))
+        self.tablero_preview = Tablero(self.canvas_preview)
+        # Un clic en la miniatura lleva el tablero real a pantalla completa.
+        self.canvas_preview.bind("<Button-1>", self.alternar_pantalla_completa)
+
+        self.ver_preview = tk.BooleanVar(value=True)
+        tk.Checkbutton(self.marco_preview, text="Mostrar", variable=self.ver_preview,
+                       bg=FONDO, fg=TEXTO_TENUE, selectcolor="#444", font=("Arial", 7),
+                       activebackground=FONDO, activeforeground=TEXTO,
+                       command=self.alternar_vista_previa).pack(pady=(0, 2))
+
     def dibujar_tiras_equipos(self):
         """Dibuja los controles de cada equipo en la pestaña EN VIVO."""
         for widget in self.frame_container_eq.winfo_children():
@@ -278,43 +341,64 @@ class ImproMatchApp:
         self.lbls_puntos_ctrl = []
         self.entries_nombres = []
         self.botones_color = []
+        self.luces_faltas = []
 
         for i, equipo in enumerate(self.estado.equipos):
             fr = tk.Frame(self.frame_container_eq, bg=FONDO_FILA, pady=4)
             fr.pack(fill="x", pady=2)
 
             f_top = tk.Frame(fr, bg=FONDO_FILA); f_top.pack(fill="x", padx=5)
-            tk.Label(f_top, text=f"{i + 1}", bg=FONDO_FILA, fg="#666",
+            tk.Label(f_top, text=f"{i + 1}", bg=FONDO_FILA, fg=TEXTO_TENUE,
                      font=("Arial", 8, "bold"), width=2).pack(side="left")
 
             btn_color = tk.Button(f_top, bg=equipo.color, width=2, bd=0,
+                                  activebackground=equipo.color,
                                   command=lambda x=i: self.elegir_color_equipo(x))
             btn_color.pack(side="left", padx=(0, 4))
             self.botones_color.append(btn_color)
 
-            en = tk.Entry(f_top, bg=FONDO, fg="white", font=("Arial", 11, "bold"),
-                          justify="center", insertbackground="white")
+            en = tk.Entry(f_top, bg=FONDO, fg=TEXTO, font=("Arial", 11, "bold"),
+                          justify="center", insertbackground=TEXTO)
             en.insert(0, equipo.nombre)
             en.pack(side="left", fill="x", expand=True)
             en.bind("<KeyRelease>", lambda e, idx=i: self.actualizar_nombre_live(idx))
             self.entries_nombres.append(en)
 
-            f_ctrl = tk.Frame(fr, bg=FONDO_FILA); f_ctrl.pack(fill="x", padx=5, pady=(4, 0))
-            tk.Button(f_ctrl, text="−", width=3, bg="#444", fg="white",
-                      font=("Arial", 10, "bold"),
+            f_ctrl = tk.Frame(fr, bg=FONDO_FILA); f_ctrl.pack(fill="x", padx=5, pady=(5, 0))
+
+            # Puntos: es la acción más repetida de la noche, así que es la que
+            # más área táctil recibe.
+            tk.Button(f_ctrl, text="−", width=3, height=2, bg="#4a4a4a", fg=TEXTO,
+                      font=("Arial", 12, "bold"), activebackground="#5c5c5c",
                       command=lambda x=i: self.mod(x, -1, 'p')).pack(side="left")
-            lbl = tk.Label(f_ctrl, text=str(equipo.puntos), font=("Impact", 16), width=3,
+            lbl = tk.Label(f_ctrl, text=str(equipo.puntos), font=("Impact", 22), width=3,
                            bg=FONDO_FILA, fg=ACENTO)
-            lbl.pack(side="left", padx=5)
+            lbl.pack(side="left", padx=4)
             self.lbls_puntos_ctrl.append(lbl)
-            tk.Button(f_ctrl, text="+", width=3, bg="#444", fg="white",
-                      font=("Arial", 10, "bold"),
+            tk.Button(f_ctrl, text="+", width=3, height=2, bg="#4a4a4a", fg=TEXTO,
+                      font=("Arial", 12, "bold"), activebackground="#5c5c5c",
                       command=lambda x=i: self.mod(x, 1, 'p')).pack(side="left")
 
-            tk.Button(f_ctrl, text="FALTA", bg="#d44", fg="white", font=("Arial", 8, "bold"),
+            # Semáforo de faltas: antes solo existía en el proyector, así que el
+            # operador tenía que girarse para saber cuántas llevaba cada equipo.
+            f_faltas = tk.Frame(f_ctrl, bg=FONDO_FILA)
+            f_faltas.pack(side="left", padx=10)
+            luces = []
+            for _ in range(MAX_FALTAS):
+                punto = tk.Label(f_faltas, text="●", bg=FONDO_FILA, fg=TEXTO_TENUE,
+                                 font=("Arial", 15))
+                punto.pack(side="left", padx=1)
+                luces.append(punto)
+            self.luces_faltas.append(luces)
+
+            tk.Button(f_ctrl, text="FALTA", bg="#d44", fg=TEXTO, font=("Arial", 8, "bold"),
+                      height=2, width=6, activebackground="#e65a5a",
                       command=lambda x=i: self.mod(x, 1, 'f')).pack(side="right")
-            tk.Button(f_ctrl, text="quitar", bg="#444", fg="#aaa", font=("Arial", 7),
-                      command=lambda x=i: self.mod(x, -1, 'f')).pack(side="right", padx=2)
+            tk.Button(f_ctrl, text="quitar", bg="#4a4a4a", fg=TEXTO_TENUE,
+                      font=("Arial", 7), height=2,
+                      command=lambda x=i: self.mod(x, -1, 'f')).pack(side="right", padx=3)
+
+        self.refrescar_luces_faltas()
 
     # --- PESTAÑA: DISEÑO ----------------------------------------------------
     def construir_tab_diseno(self, parent):
@@ -370,14 +454,14 @@ class ImproMatchApp:
         fr_lay.pack(fill="x", padx=10, pady=5)
 
         f_tim = tk.Frame(fr_lay, bg=FONDO); f_tim.pack(fill="x", padx=5, pady=5)
-        tk.Label(f_tim, text="Base Timer:", bg=FONDO, fg="#aaa").pack(side="left")
+        tk.Label(f_tim, text="Base Timer:", bg=FONDO, fg=TEXTO_SUAVE).pack(side="left")
         self.combo_timer = ttk.Combobox(f_tim, values=["Arriba", "Abajo"],
                                         state="readonly", width=8)
         self.combo_timer.set(d.timer_position)
         self.combo_timer.pack(side="left", padx=5)
         self.combo_timer.bind("<<ComboboxSelected>>", self.cambiar_pos_timer)
 
-        tk.Label(f_tim, text="Alerta (s):", bg=FONDO, fg="#aaa").pack(side="left", padx=(10, 2))
+        tk.Label(f_tim, text="Alerta (s):", bg=FONDO, fg=TEXTO_SUAVE).pack(side="left", padx=(10, 2))
         # Con textvariable: un Spinbox en 'readonly' ignora delete()/insert(),
         # así que la variable es la única forma fiable de fijarlo por código.
         self.var_alerta = tk.StringVar(value=str(d.segundos_alerta))
@@ -391,7 +475,7 @@ class ImproMatchApp:
         self.mk_slider(fr_lay, "Offset Nombres", -0.2, 0.2, 0.01, 'offset_names')
         self.mk_slider(fr_lay, "Offset Puntos", -0.2, 0.2, 0.01, 'offset_scores')
         self.mk_slider(fr_lay, "Ajuste Timer", -0.5, 0.5, 0.01, 'offset_timer')
-        tk.Label(fr_lay, text="--- GENERAL ---", bg=FONDO, fg="#666",
+        tk.Label(fr_lay, text="--- GENERAL ---", bg=FONDO, fg=TEXTO_TENUE,
                  font=("Arial", 7)).pack(pady=2)
         self.mk_slider(fr_lay, "Tam. Nombres", 0.5, 3.0, 0.1, 'name_scale')
         self.mk_slider(fr_lay, "Zoom General", 0.5, 2.0, 0.05, 'scale_factor')
@@ -403,7 +487,7 @@ class ImproMatchApp:
         fr_f.pack(fill="x", padx=10, pady=5)
         familias = sorted({f for f in font.families() if not f.startswith("@")})
 
-        tk.Label(fr_f, text="Nombres", bg=FONDO, fg="#aaa", font=("Arial", 8),
+        tk.Label(fr_f, text="Nombres", bg=FONDO, fg=TEXTO_SUAVE, font=("Arial", 8),
                  anchor="w").pack(fill="x", padx=5)
         cb_nombres = ttk.Combobox(fr_f, values=familias, state="readonly")
         cb_nombres.set(d.font_family)
@@ -412,7 +496,7 @@ class ImproMatchApp:
                         lambda e: self.set_font(cb_nombres.get(), 'names'))
         self.combo_font_nombres = cb_nombres
 
-        tk.Label(fr_f, text="Puntos y reloj", bg=FONDO, fg="#aaa", font=("Arial", 8),
+        tk.Label(fr_f, text="Puntos y reloj", bg=FONDO, fg=TEXTO_SUAVE, font=("Arial", 8),
                  anchor="w").pack(fill="x", padx=5)
         cb_score = ttk.Combobox(fr_f, values=familias, state="readonly")
         cb_score.set(d.font_score)
@@ -454,7 +538,7 @@ class ImproMatchApp:
 
     def mk_slider(self, padre, texto, vmin, vmax, resolucion, attr):
         f = tk.Frame(padre, bg=FONDO); f.pack(fill="x", pady=1)
-        tk.Label(f, text=texto, bg=FONDO, fg="#ddd", width=20, anchor="w",
+        tk.Label(f, text=texto, bg=FONDO, fg=TEXTO_SUAVE, width=20, anchor="w",
                  font=("Arial", 8)).pack(side="left")
         s = tk.Scale(f, from_=vmin, to=vmax, resolution=resolucion, orient="horizontal",
                      bg=FONDO, fg="white", highlightthickness=0, bd=0,
@@ -478,7 +562,7 @@ class ImproMatchApp:
         for i in range(NUM_SONIDOS):
             fila = tk.Frame(parent, bg=FONDO_FILA, pady=5)
             fila.pack(fill="x", padx=10, pady=2)
-            tk.Label(fila, text=f"#{i + 1}", bg=FONDO_FILA, fg="#888", width=3).pack(side="left")
+            tk.Label(fila, text=f"#{i + 1}", bg=FONDO_FILA, fg=TEXTO_TENUE, width=3).pack(side="left")
 
             entrada = tk.Entry(fila, width=14)
             entrada.insert(0, self.estado.sonidos[i].nombre)
@@ -491,7 +575,7 @@ class ImproMatchApp:
             tk.Button(fila, text="✖", font=("Arial", 7), bg="#522", fg="white",
                       command=lambda x=i: self.vaciar_sonido(x)).pack(side="left", padx=2)
 
-            etiqueta = tk.Label(fila, text="Vacío", bg=FONDO_FILA, fg="#666", width=16,
+            etiqueta = tk.Label(fila, text="Vacío", bg=FONDO_FILA, fg=TEXTO_TENUE, width=16,
                                 anchor="w", font=("Arial", 8))
             etiqueta.pack(side="left", padx=5)
             self.lbls_estado_sonido.append(etiqueta)
@@ -499,7 +583,7 @@ class ImproMatchApp:
             tk.Button(fila, text="▶", command=lambda x=i: self.play_sound(x), bg="#444",
                       fg="white").pack(side="right", padx=5)
 
-        tk.Label(parent, bg=FONDO, fg="#888", font=("Arial", 8), justify="left", anchor="w",
+        tk.Label(parent, bg=FONDO, fg=TEXTO_TENUE, font=("Arial", 8), justify="left", anchor="w",
                  text=("Formatos: MP3, WAV y OGG.\n"
                        "Las rutas quedan guardadas: al reabrir el programa los efectos\n"
                        "se recargan solos, siempre que los archivos sigan en su sitio.")
@@ -510,7 +594,7 @@ class ImproMatchApp:
         tk.Label(parent, text="MANDO A DISTANCIA (WiFi)", bg=FONDO, fg=ACENTO,
                  font=("Arial", 12, "bold")).pack(pady=(10, 2))
         tk.Label(parent, text="Controla puntos, faltas, cronómetro y efectos\ndesde tu celular o tablet.",
-                 bg=FONDO, fg="#aaa", font=("Arial", 9), justify="center").pack(pady=(0, 10))
+                 bg=FONDO, fg=TEXTO_SUAVE, font=("Arial", 9), justify="center").pack(pady=(0, 10))
 
         if not REMOTE_ENABLED:
             tk.Label(parent, text="⚠ Falta el archivo 'remote_control.py'.\nDescárgalo junto al programa para usar esta función.",
@@ -520,7 +604,7 @@ class ImproMatchApp:
         fr_cfg = tk.LabelFrame(parent, text="Servidor", bg=FONDO, fg="white")
         fr_cfg.pack(fill="x", padx=10, pady=5)
         f_port = tk.Frame(fr_cfg, bg=FONDO); f_port.pack(fill="x", padx=5, pady=5)
-        tk.Label(f_port, text="Puerto:", bg=FONDO, fg="#aaa").pack(side="left")
+        tk.Label(f_port, text="Puerto:", bg=FONDO, fg=TEXTO_SUAVE).pack(side="left")
         self.entry_puerto = tk.Entry(f_port, textvariable=self.remote_port_var, width=6,
                                      justify="center")
         self.entry_puerto.pack(side="left", padx=5)
@@ -531,20 +615,20 @@ class ImproMatchApp:
         fr_conn = tk.LabelFrame(parent, text="Datos de conexión", bg=FONDO, fg="#00ff88")
         fr_conn.pack(fill="x", padx=10, pady=5)
         tk.Label(fr_conn, text="Dirección (escríbela en el navegador del celular):",
-                 bg=FONDO, fg="#aaa", font=("Arial", 8)).pack(anchor="w", padx=5, pady=(5, 0))
+                 bg=FONDO, fg=TEXTO_SUAVE, font=("Arial", 8)).pack(anchor="w", padx=5, pady=(5, 0))
         self.lbl_url = tk.Entry(fr_conn, textvariable=self.remote_url_var, state="readonly",
                                 readonlybackground="#111", fg=ACENTO, justify="center",
                                 font=("Consolas", 12, "bold"), bd=0)
         self.lbl_url.pack(fill="x", padx=5, pady=3)
 
         f_pin = tk.Frame(fr_conn, bg=FONDO); f_pin.pack(fill="x", padx=5, pady=5)
-        tk.Label(f_pin, text="PIN:", bg=FONDO, fg="#aaa").pack(side="left")
+        tk.Label(f_pin, text="PIN:", bg=FONDO, fg=TEXTO_SUAVE).pack(side="left")
         tk.Label(f_pin, textvariable=self.remote_pin_var, bg=FONDO, fg="#ffcc00",
                  font=("Consolas", 18, "bold")).pack(side="left", padx=8)
         tk.Button(f_pin, text="🔄 Nuevo PIN", bg="#444", fg="white", font=("Arial", 8),
                   command=self.regenerar_pin).pack(side="right")
 
-        tk.Label(parent, justify="left", bg=FONDO, fg="#888", font=("Arial", 8), anchor="w",
+        tk.Label(parent, justify="left", bg=FONDO, fg=TEXTO_TENUE, font=("Arial", 8), anchor="w",
                  text=("CÓMO USARLO\n"
                        "1. Conecta el computador y el celular a la MISMA red WiFi.\n"
                        "2. Presiona ENCENDER y escribe la dirección en el navegador del celular.\n"
@@ -561,7 +645,7 @@ class ImproMatchApp:
         tk.Label(parent, text=f"MATCH IMPRO DIRECTOR {VERSION}", bg=FONDO, fg=ACENTO,
                  font=("Arial", 13, "bold")).pack(pady=(12, 2))
         tk.Label(parent, text="Corporación Acción Impro · Medellín, Colombia",
-                 bg=FONDO, fg="#aaa", font=("Arial", 9)).pack()
+                 bg=FONDO, fg=TEXTO_SUAVE, font=("Arial", 9)).pack()
 
         fr = tk.LabelFrame(parent, text="Atajos de teclado", bg=FONDO, fg="white")
         fr.pack(fill="x", padx=12, pady=12)
@@ -580,24 +664,24 @@ class ImproMatchApp:
             fila = tk.Frame(fr, bg=FONDO); fila.pack(fill="x", padx=8, pady=1)
             tk.Label(fila, text=tecla, bg=FONDO, fg="#ffcc00", font=("Consolas", 9, "bold"),
                      width=18, anchor="w").pack(side="left")
-            tk.Label(fila, text=accion, bg=FONDO, fg="#ccc", font=("Arial", 8),
+            tk.Label(fila, text=accion, bg=FONDO, fg=TEXTO_SUAVE, font=("Arial", 8),
                      anchor="w").pack(side="left")
         tk.Label(fr, text="Los atajos se ignoran mientras escribes en una casilla de texto.",
-                 bg=FONDO, fg="#666", font=("Arial", 7), anchor="w").pack(fill="x", padx=8,
+                 bg=FONDO, fg=TEXTO_TENUE, font=("Arial", 7), anchor="w").pack(fill="x", padx=8,
                                                                           pady=(6, 6))
 
         fr2 = tk.LabelFrame(parent, text="Preferencias", bg=FONDO, fg="white")
         fr2.pack(fill="x", padx=12, pady=(0, 12))
-        tk.Label(fr2, bg=FONDO, fg="#888", font=("Arial", 8), justify="left", anchor="w",
+        tk.Label(fr2, bg=FONDO, fg=TEXTO_TENUE, font=("Arial", 8), justify="left", anchor="w",
                  text=("El diseño, los nombres de equipo, los colores y las rutas de los\n"
                        "efectos se guardan solos y se recuperan al abrir el programa.\n"
                        "Con 💾 Guardar puedes exportar un preset por espectáculo.")
                  ).pack(fill="x", padx=8, pady=6)
-        tk.Label(fr2, text=f"Archivo: {self.ruta_preferencias}", bg=FONDO, fg="#555",
+        tk.Label(fr2, text=f"Archivo: {self.ruta_preferencias}", bg=FONDO, fg=TEXTO_TENUE,
                  font=("Arial", 7), anchor="w", wraplength=500,
                  justify="left").pack(fill="x", padx=8, pady=(0, 8))
 
-        tk.Label(parent, bg=FONDO, fg="#666", font=("Arial", 8), justify="center",
+        tk.Label(parent, bg=FONDO, fg=TEXTO_TENUE, font=("Arial", 8), justify="center",
                  text="Licencia Creative Commons CC BY 4.0\nHecho por y para improvisadores 🎭"
                  ).pack(side="bottom", pady=12)
 
@@ -626,7 +710,32 @@ class ImproMatchApp:
         alto = self.win_proj.winfo_height()
         self._ultimo_tamano = (ancho, alto)
         self.tablero.dibujar(self.estado, ancho, alto, calidad)
+        self.dibujar_vista_previa(ancho, alto)
         self._ultimo_segundo_pintado = self.estado.cronometro.restante
+
+    def dibujar_vista_previa(self, ancho_real=None, alto_real=None):
+        """Repinta la miniatura respetando la proporción del proyector."""
+        if not self.ver_preview.get() or not self.canvas_preview.winfo_exists():
+            return
+        if ancho_real is None:
+            ancho_real, alto_real = self._ultimo_tamano
+        if ancho_real < 10 or alto_real < 10:
+            return
+
+        alto_mini = max(60, int(PREVIEW_ANCHO * alto_real / ancho_real))
+        if int(self.canvas_preview.cget("height")) != alto_mini:
+            self.canvas_preview.config(height=alto_mini)
+        # Filtro rápido siempre: a este tamaño la diferencia no se aprecia y
+        # evita duplicar el coste del redibujado del tablero real.
+        self.tablero_preview.dibujar(self.estado, PREVIEW_ANCHO, alto_mini, CALIDAD_RAPIDA)
+
+    def alternar_vista_previa(self):
+        """Muestra u oculta la miniatura (útil en equipos muy justos de CPU)."""
+        if self.ver_preview.get():
+            self.canvas_preview.pack(padx=4, pady=(2, 4), before=self.marco_preview.winfo_children()[-1])
+            self.dibujar_vista_previa()
+        else:
+            self.canvas_preview.pack_forget()
 
     def al_redimensionar(self, event=None):
         """
@@ -657,12 +766,14 @@ class ImproMatchApp:
         """
         crono = self.estado.cronometro
         if crono.revisar_agotado():
-            self.avisar("⏰ ¡Tiempo!")
+            self.avisar("⏰ ¡TIEMPO! Se acabó la cuenta regresiva.", 'alerta')
         segundo = crono.restante
         if segundo != self._ultimo_segundo_pintado:
             self._ultimo_segundo_pintado = segundo
             if not self.tablero.actualizar_timer(self.estado):
                 self.solicitar_redibujado()
+            if self.ver_preview.get():
+                self.tablero_preview.actualizar_timer(self.estado)
             self.actualizar_reloj_panel()
         self._id_tic = self.root.after(TIMER_TICK_MS, self.tic_cronometro)
 
@@ -683,10 +794,10 @@ class ImproMatchApp:
             minutos = int(self.e_min.get() or 0)
             segundos = int(self.e_sec.get() or 0)
         except ValueError:
-            self.avisar("Minutos y segundos deben ser números.")
+            self.avisar("Minutos y segundos deben ser números.", 'error')
             return
         if minutos < 0 or segundos < 0 or segundos > 59:
-            self.avisar("Revisa el tiempo: los segundos van de 0 a 59.")
+            self.avisar("Revisa el tiempo: los segundos van de 0 a 59.", 'error')
             return
         total = min(minutos * 60 + segundos, TIEMPO_MAXIMO)
         self.estado.cronometro.fijar(total)
@@ -701,13 +812,13 @@ class ImproMatchApp:
 
     def iniciar_tiempo(self):
         if self.estado.cronometro.iniciar():
-            self.avisar("Cronómetro en marcha.")
+            self.avisar("Cronómetro en marcha.", 'ok')
         elif self.estado.cronometro.restante == 0:
-            self.avisar("Fija un tiempo antes de iniciar (botón SET).")
+            self.avisar("Fija un tiempo antes de iniciar (botón SET).", 'error')
 
     def pausar_tiempo(self):
         if self.estado.cronometro.pausar():
-            self.avisar("Cronómetro en pausa.")
+            self.avisar("Cronómetro en pausa.", 'alerta')
 
     def alternar_tiempo(self, event=None):
         self.estado.cronometro.alternar()
@@ -744,7 +855,20 @@ class ImproMatchApp:
         for i, equipo in enumerate(self.estado.equipos):
             if i < len(self.lbls_puntos_ctrl):
                 self.lbls_puntos_ctrl[i].config(text=str(equipo.puntos))
+        self.refrescar_luces_faltas()
         self.actualizar_botones_historial()
+
+    def refrescar_luces_faltas(self):
+        """Enciende el semáforo de faltas del panel igual que el del tablero."""
+        color_falta = self.estado.diseno.color_faltas
+        for i, equipo in enumerate(self.estado.equipos):
+            if i >= len(self.luces_faltas):
+                continue
+            for k, punto in enumerate(self.luces_faltas[i]):
+                try:
+                    punto.config(fg=color_falta if k < equipo.faltas else "#555")
+                except tk.TclError:
+                    pass
 
     def actualizar_botones_historial(self):
         estado_deshacer = "normal" if self.estado.puede_deshacer else "disabled"
@@ -778,7 +902,7 @@ class ImproMatchApp:
         self.sincronizar_casillas_tiempo()
         self.forzar_refresco_reloj()
         self.solicitar_redibujado()
-        self.avisar("Marcador reiniciado.")
+        self.avisar("Marcador reiniciado.", 'ok')
 
     def actualizar_nombre_live(self, idx):
         self.estado.renombrar(idx, self.entries_nombres[idx].get())
@@ -864,7 +988,7 @@ class ImproMatchApp:
         self.reconstruir_controles_diseno()
         self.solicitar_redibujado()
         self.programar_autoguardado()
-        self.avisar("Diseño restablecido.")
+        self.avisar("Diseño restablecido.", 'ok')
 
     def reconstruir_controles_diseno(self):
         """Vuelve a sincronizar los widgets tras cargar o restablecer un diseño."""
@@ -1029,7 +1153,7 @@ class ImproMatchApp:
         """Reproduce un efecto y hace un destello en el botón del panel."""
         ranura = self.estado.sonidos[idx]
         if not ranura.cargado:
-            self.avisar(f"El botón #{idx + 1} no tiene ningún efecto cargado.")
+            self.avisar(f"El botón #{idx + 1} no tiene ningún efecto cargado.", 'error')
             return
         ranura.obj.stop()
         ranura.obj.play()
@@ -1077,7 +1201,7 @@ class ImproMatchApp:
             return True
         except OSError as e:
             if avisar_error:
-                self.avisar(f"No se pudieron guardar las preferencias: {e}")
+                self.avisar(f"No se pudieron guardar las preferencias: {e}", 'error')
             return False
 
     def cargar_preferencias(self, ruta=None, silencioso=False):
@@ -1102,7 +1226,7 @@ class ImproMatchApp:
         if not ruta:
             return
         if self.guardar_preferencias(ruta):
-            self.avisar(f"Preset guardado: {os.path.basename(ruta)}")
+            self.avisar(f"Preset guardado: {os.path.basename(ruta)}", 'ok')
 
     def cargar_preset_desde(self, event=None):
         ruta = filedialog.askopenfilename(title="Cargar preset",
@@ -1110,7 +1234,7 @@ class ImproMatchApp:
         if not ruta or not self.cargar_preferencias(ruta):
             return
         self.aplicar_estado_a_la_interfaz()
-        self.avisar(f"Preset cargado: {os.path.basename(ruta)}")
+        self.avisar(f"Preset cargado: {os.path.basename(ruta)}", 'ok')
 
     def aplicar_estado_a_la_interfaz(self):
         """Refresca todos los widgets tras cargar un preset."""
@@ -1184,14 +1308,18 @@ class ImproMatchApp:
 
     def atajo_guardar(self, event=None):
         if self.guardar_preferencias():
-            self.avisar("Preferencias guardadas.")
+            self.avisar("Preferencias guardadas.", 'ok')
         return "break"
 
-    def avisar(self, mensaje):
+    COLORES_AVISO = {'info': TEXTO_TENUE, 'ok': AVISO_OK,
+                     'alerta': AVISO_ALERTA, 'error': AVISO_ERROR}
+
+    def avisar(self, mensaje, tipo='info'):
         """Escribe en la barra de estado inferior del panel."""
         try:
             self.estado_var.set(mensaje)
-        except tk.TclError:
+            self.lbl_estado.config(fg=self.COLORES_AVISO.get(tipo, TEXTO_TENUE))
+        except (AttributeError, tk.TclError):
             pass
 
     # ==========================================================================
@@ -1231,7 +1359,7 @@ class ImproMatchApp:
         self.remote_url_var.set(self.remoto.url)
         self.btn_remoto.config(text="⏹ APAGAR", bg=ROJO)
         self.entry_puerto.config(state="disabled")
-        self.avisar(f"Mando a distancia activo en {self.remoto.url}")
+        self.avisar(f"Mando a distancia activo en {self.remoto.url}", 'ok')
 
     def detener_remoto(self):
         if not self.remoto:
@@ -1242,7 +1370,7 @@ class ImproMatchApp:
         try:
             self.btn_remoto.config(text="▶ ENCENDER", bg=VERDE)
             self.entry_puerto.config(state="normal")
-            self.avisar("Mando a distancia apagado.")
+            self.avisar("Mando a distancia apagado.", 'alerta')
         except tk.TclError:
             pass
 
@@ -1254,7 +1382,7 @@ class ImproMatchApp:
         if self.remoto:
             self.remoto.pin = nuevo
         self.remote_pin_var.set(nuevo)
-        self.avisar("PIN nuevo generado: los celulares deben volver a emparejarse.")
+        self.avisar("PIN nuevo generado: los celulares deben volver a emparejarse.", 'alerta')
 
     def estado_para_remoto(self):
         """Foto del estado para el celular. La lee el hilo del servidor: solo datos."""

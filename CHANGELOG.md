@@ -4,6 +4,41 @@ Todas las novedades relevantes de **Match Impro Director**.
 
 ---
 
+## [2.1.0] — 2026
+
+Versión centrada en la experiencia de uso durante la función.
+
+### 🎛 Panel del operador
+
+- **Vista previa en vivo del tablero.** Una miniatura muestra exactamente lo que
+  está viendo el público. Antes, con el tablero a pantalla completa en el
+  proyector, el operador tenía que girarse para comprobar qué se proyectaba.
+  Un clic en la miniatura activa la pantalla completa.
+- **Semáforo de faltas en el panel.** Cada equipo muestra sus faltas junto a los
+  botones. Antes ese dato solo existía en la proyección.
+- **Jerarquía visual.** El marcador y los botones de puntos —lo que más se pulsa
+  en una noche— crecen y ganan área táctil; el reloj del panel es más grande.
+- **Contraste accesible.** Los grises de texto pasan el mínimo AA (4,5:1). Los de
+  la versión anterior llegaban a 2,1:1 sobre su fondo: ilegibles en sala oscura.
+- **Barra de estado legible**, con color según la importancia del aviso
+  (confirmación, alerta o error).
+- **La acción destructiva se separa.** «Reiniciar» pasa al extremo opuesto de
+  «Deshacer» para que un clic errado no borre el marcador.
+
+### 📱 Mando a distancia
+
+- **La pantalla del celular ya no se apaga** durante la función (Wake Lock).
+- **Acuse de recibo al pulsar:** el botón destella cuando el panel confirma la
+  orden, y vibra al tocarlo. En una sala ruidosa no había forma de saber si el
+  toque había llegado.
+
+### ⚡ Coste
+
+La miniatura añade 2,6 ms al redibujado completo y 0,4 ms al segundo de reloj.
+Se puede desactivar con la casilla «Mostrar» en equipos muy justos de CPU.
+
+---
+
 ## [2.0.0] — 2026
 
 Versión centrada en el rendimiento, la fiabilidad en función y la comodidad del operador.

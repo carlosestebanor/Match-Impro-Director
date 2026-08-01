@@ -299,6 +299,109 @@ class PruebasRendimientoPanel(BaseApp):
         self.assertEqual(ids_antes, self.app.canvas.find_all())
 
 
+class PruebasVistaPrevia(BaseApp):
+    """La miniatura de 'lo que ve el público' dentro del panel."""
+
+    def test_se_dibuja_al_arrancar(self):
+        self.assertGreater(len(self.app.canvas_preview.find_all()), 10)
+
+    def test_refleja_el_marcador(self):
+        self.app.mod(0, 1, 'p')
+        self.app.mod(0, 1, 'p')
+        self.girar()
+        textos = [self.app.canvas_preview.itemcget(i, "text")
+                  for i in self.app.canvas_preview.find_all()
+                  if self.app.canvas_preview.type(i) == "text"]
+        self.assertIn("2", textos)
+
+    def test_respeta_la_proporcion_del_proyector(self):
+        self.app.win_proj.geometry("1200x600")
+        self.girar(0.6)
+        alto = int(self.app.canvas_preview.cget("height"))
+        esperado = int(self.mds.PREVIEW_ANCHO * 600 / 1200)
+        self.assertAlmostEqual(alto, esperado, delta=6)
+
+    def test_se_puede_ocultar(self):
+        self.app.ver_preview.set(False)
+        self.app.alternar_vista_previa()
+        self.girar()
+        self.assertFalse(self.app.canvas_preview.winfo_ismapped())
+
+    def test_oculta_no_consume_dibujo(self):
+        self.app.ver_preview.set(False)
+        self.app.alternar_vista_previa()
+        self.app.canvas_preview.delete("all")
+        self.app.redibujar_ahora()
+        self.girar()
+        self.assertEqual(len(self.app.canvas_preview.find_all()), 0)
+
+    def test_vuelve_al_mostrarla(self):
+        self.app.ver_preview.set(False)
+        self.app.alternar_vista_previa()
+        self.girar()
+        self.app.ver_preview.set(True)
+        self.app.alternar_vista_previa()
+        self.girar()
+        self.assertTrue(self.app.canvas_preview.winfo_ismapped())
+        self.assertGreater(len(self.app.canvas_preview.find_all()), 10)
+
+    def test_el_reloj_de_la_miniatura_avanza(self):
+        self.app.estado.cronometro.fijar(65)
+        self.girar(0.4)
+        textos = [self.app.canvas_preview.itemcget(i, "text")
+                  for i in self.app.canvas_preview.find_all()
+                  if self.app.canvas_preview.type(i) == "text"]
+        self.assertIn("01:05", textos)
+
+
+class PruebasSemaforoFaltas(BaseApp):
+    """El panel debe mostrar las faltas, no solo el proyector."""
+
+    def test_hay_tres_luces_por_equipo(self):
+        self.assertEqual(len(self.app.luces_faltas), 3)
+        self.assertTrue(all(len(l) == self.mds.MAX_FALTAS for l in self.app.luces_faltas))
+
+    def test_se_encienden_al_marcar_falta(self):
+        apagado = self.app.luces_faltas[0][0].cget("fg")
+        self.app.mod(0, 1, 'f')
+        self.girar()
+        self.assertEqual(self.app.luces_faltas[0][0].cget("fg"),
+                         self.app.estado.diseno.color_faltas)
+        self.assertEqual(self.app.luces_faltas[0][1].cget("fg"), apagado)
+
+    def test_se_apagan_al_quitar_falta(self):
+        self.app.mod(1, 1, 'f')
+        self.girar()
+        self.app.mod(1, -1, 'f')
+        self.girar()
+        self.assertNotEqual(self.app.luces_faltas[1][0].cget("fg"),
+                            self.app.estado.diseno.color_faltas)
+
+    def test_se_rehacen_al_cambiar_de_equipos(self):
+        self.app.num_equipos_var.set(5)
+        self.app.actualizar_estructura_equipos()
+        self.girar()
+        self.assertEqual(len(self.app.luces_faltas), 5)
+
+
+class PruebasBarraDeEstado(BaseApp):
+    def test_los_avisos_llevan_color_segun_importancia(self):
+        self.app.avisar("todo bien", 'ok')
+        self.assertEqual(self.app.lbl_estado.cget("fg"), self.mds.AVISO_OK)
+        self.app.avisar("cuidado", 'alerta')
+        self.assertEqual(self.app.lbl_estado.cget("fg"), self.mds.AVISO_ALERTA)
+        self.app.avisar("mal", 'error')
+        self.assertEqual(self.app.lbl_estado.cget("fg"), self.mds.AVISO_ERROR)
+        self.app.avisar("normal")
+        self.assertEqual(self.app.lbl_estado.cget("fg"), self.mds.TEXTO_TENUE)
+
+    def test_un_error_de_tiempo_se_marca_como_error(self):
+        self.app.e_min.delete(0, "end"); self.app.e_min.insert(0, "xx")
+        self.app.set_tiempo()
+        self.girar()
+        self.assertEqual(self.app.lbl_estado.cget("fg"), self.mds.AVISO_ERROR)
+
+
 class PruebasImagenes(BaseApp):
     def test_quitar_fondo_y_logo(self):
         self.app.estado.diseno.fondo_path = "/inventado/fondo.png"

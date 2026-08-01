@@ -6,8 +6,8 @@
 
 ![Acción Impro](https://img.shields.io/badge/Developed%20by-Acción%20Impro-blue)
 ![License](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey)
-![Version](https://img.shields.io/badge/Version-2.0.0--stable-green)
-![Tests](https://img.shields.io/badge/Tests-152%20automated-brightgreen)
+![Version](https://img.shields.io/badge/Version-2.1.0--stable-green)
+![Tests](https://img.shields.io/badge/Tests-169%20automated-brightgreen)
 
 Professional technical suite designed for **Improvisational Match** shows, theater competitions, and live performing arts events. Developed in Medellín, Colombia, by **Corporación Acción Impro**.
 
@@ -22,6 +22,7 @@ Professional technical suite designed for **Improvisational Match** shows, theat
 - **Dual Screen (Multimonitor):** Control everything from your laptop while the audience only sees the professional board on the projector.
 - **Smart Fullscreen:** Native fullscreen (F11 or double-click) on whichever monitor holds the board. Works on Windows, Linux and macOS.
 - **Flexible Design:** Supports various background ratios (16:9, 4:3, 1:1), customizable logos, and precise manual adjustment for every element.
+- **Live Preview:** A thumbnail in the panel shows exactly what the audience sees, so you never turn around to check the projector.
 - **Live Control:** Edit names, update scores, and manage fouls (up to 3 with "traffic light" style) without pausing the show. Up to **6 teams**, each with its own color.
 - **Undo and Redo:** A point given to the wrong team is fixed with `Ctrl+Z`, not by recalculating by hand.
 - **Integrated Soundbar:** 6-slot sound effect launcher (MP3/WAV/OGG) with customizable names, volume control and a mute button.

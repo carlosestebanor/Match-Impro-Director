@@ -6,8 +6,8 @@
 
 ![Acción Impro](https://img.shields.io/badge/Developed%20by-Acción%20Impro-blue)
 ![License](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey)
-![Version](https://img.shields.io/badge/Version-2.0.0--stable-green)
-![Pruebas](https://img.shields.io/badge/Pruebas-152%20automáticas-brightgreen)
+![Version](https://img.shields.io/badge/Version-2.1.0--stable-green)
+![Pruebas](https://img.shields.io/badge/Pruebas-169%20automáticas-brightgreen)
 
 Software profesional de dirección técnica diseñado específicamente para **Match de Improvisación**, competencias teatrales y eventos de artes escénicas en vivo. Desarrollado en Medellín, Colombia, por la **Corporación Acción Impro**.
 
@@ -22,6 +22,7 @@ Software profesional de dirección técnica diseñado específicamente para **Ma
 - **Doble Pantalla (Multimonitor):** Controla todo desde tu laptop mientras el público ve solo el tablero profesional en el proyector.
 - **Fullscreen Inteligente:** Pantalla completa nativa (F11 o doble clic) en el monitor donde esté el tablero. Funciona en Windows, Linux y macOS.
 - **Diseño Adaptable:** Cambia fondos (16:9, 4:3, 1:1), carga logos personalizados y ajusta la posición de cada elemento con precisión milimétrica.
+- **Vista Previa en Vivo:** Una miniatura en el panel te muestra exactamente lo que ve el público, sin girarte hacia el proyector.
 - **Control en Vivo:** Edita nombres, suma puntos y gestiona faltas (máximo 3 con estilo semáforo) sin pausar el show. Hasta **6 equipos**, cada uno con su color.
 - **Deshacer y Rehacer:** Un punto mal asignado se corrige con `Ctrl+Z`, no recalculando a mano.
 - **Soundbar Integrada:** Lanzador de 6 slots de efectos (MP3/WAV/OGG) con nombres personalizables, control de volumen y botón de silencio.

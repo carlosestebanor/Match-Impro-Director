@@ -87,8 +87,15 @@ PAGINA_HTML = """<!doctype html>
     border: 0; border-radius: 10px; padding: 14px 10px; cursor: pointer;
     touch-action: manipulation;
   }
-  button:active { filter: brightness(1.5); }
+  button:active { filter: brightness(1.5); transform: scale(.97); }
   button:disabled { opacity: .35; }
+  /* Acuse de recibo: el botón destella cuando el panel confirma la orden.
+     Sin esto, en una sala ruidosa no hay forma de saber si el toque llegó. */
+  button.enviado { animation: destello .45s ease-out; }
+  @keyframes destello {
+    0%   { box-shadow: 0 0 0 0 rgba(0,212,255,.9); }
+    100% { box-shadow: 0 0 0 14px rgba(0,212,255,0); }
+  }
   input {
     font: inherit; background: #000; color: #fff; border: 1px solid #444;
     border-radius: 8px; padding: 10px; text-align: center; width: 100%;
@@ -129,17 +136,17 @@ PAGINA_HTML = """<!doctype html>
   <div class="fila" style="margin-bottom:8px">
     <input id="min" type="number" min="0" max="99" inputmode="numeric" placeholder="min">
     <input id="seg" type="number" min="0" max="59" inputmode="numeric" placeholder="seg">
-    <button class="gris" onclick="fijarTiempo()">SET</button>
+    <button id="btn-set" class="gris" onclick="fijarTiempo()">SET</button>
   </div>
   <div class="fila" style="margin-bottom:8px">
-    <button class="verde" onclick="enviar({accion:'timer_start'})">▶ INICIO</button>
-    <button class="ambar" onclick="enviar({accion:'timer_pause'})">⏸ PAUSA</button>
+    <button class="verde" onclick="enviar({accion:'timer_start'}, this)">▶ INICIO</button>
+    <button class="ambar" onclick="enviar({accion:'timer_pause'}, this)">⏸ PAUSA</button>
   </div>
   <div class="fila">
-    <button class="gris" style="font-size:13px" onclick="enviar({accion:'timer_ajustar',segundos:-30})">−30s</button>
-    <button class="gris" style="font-size:13px" onclick="enviar({accion:'timer_ajustar',segundos:-10})">−10s</button>
-    <button class="gris" style="font-size:13px" onclick="enviar({accion:'timer_ajustar',segundos:10})">+10s</button>
-    <button class="gris" style="font-size:13px" onclick="enviar({accion:'timer_ajustar',segundos:30})">+30s</button>
+    <button class="gris" style="font-size:13px" onclick="enviar({accion:'timer_ajustar',segundos:-30}, this)">−30s</button>
+    <button class="gris" style="font-size:13px" onclick="enviar({accion:'timer_ajustar',segundos:-10}, this)">−10s</button>
+    <button class="gris" style="font-size:13px" onclick="enviar({accion:'timer_ajustar',segundos:10}, this)">+10s</button>
+    <button class="gris" style="font-size:13px" onclick="enviar({accion:'timer_ajustar',segundos:30}, this)">+30s</button>
   </div>
 </section>
 
@@ -147,14 +154,14 @@ PAGINA_HTML = """<!doctype html>
   <div class="titulo">EQUIPOS</div>
   <div id="equipos"></div>
   <button id="btn-deshacer" class="gris" style="width:100%;font-size:13px"
-          onclick="enviar({accion:'deshacer'})">↩ DESHACER ÚLTIMA JUGADA</button>
+          onclick="enviar({accion:'deshacer'}, this)">↩ DESHACER ÚLTIMA JUGADA</button>
 </section>
 
 <section>
   <div class="titulo">EFECTOS DE SONIDO</div>
   <div class="grid-fx" id="fx"></div>
   <button class="gris" style="width:100%;margin-top:8px;font-size:13px"
-          onclick="enviar({accion:'detener_sonidos'})">⏹ SILENCIAR</button>
+          onclick="enviar({accion:'detener_sonidos'}, this)">⏹ SILENCIAR</button>
 </section>
 
 <div id="gate">
@@ -182,6 +189,7 @@ function guardarPin() {
   pin = document.getElementById('pin-in').value.trim();
   localStorage.setItem(CLAVE, pin);
   gate(false);
+  mantenerPantallaViva();
   refrescar();
 }
 
@@ -200,18 +208,36 @@ function pedir(ruta, opciones) {
   });
 }
 
-function enviar(comando) {
+function enviar(comando, boton) {
+  if (boton && navigator.vibrate) navigator.vibrate(12);
   return pedir('/api/comando', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify(comando)
-  }).then(refrescar).catch(function () { marcar('err'); });
+  }).then(function () {
+    if (boton) {
+      boton.classList.remove('enviado');
+      void boton.offsetWidth;      // Reinicia la animación si se pulsa seguido
+      boton.classList.add('enviado');
+    }
+    return refrescar();
+  }).catch(function () { marcar('err'); });
+}
+
+// Mantiene la pantalla del celular encendida mientras dura la función.
+var bloqueo = null;
+function mantenerPantallaViva() {
+  if (!navigator.wakeLock || bloqueo) return;
+  navigator.wakeLock.request('screen').then(function (b) {
+    bloqueo = b;
+    b.addEventListener('release', function () { bloqueo = null; });
+  }).catch(function () { /* el navegador no lo permite: seguimos igual */ });
 }
 
 function fijarTiempo() {
   var m = parseInt(document.getElementById('min').value, 10) || 0;
   var s = parseInt(document.getElementById('seg').value, 10) || 0;
-  enviar({accion: 'timer_set', segundos: m * 60 + s});
+  enviar({accion: 'timer_set', segundos: m * 60 + s}, document.getElementById('btn-set'));
 }
 
 function mmss(total) {
@@ -252,10 +278,10 @@ function pintar(estado) {
         '</div>';
       d.querySelector('.nombre').textContent = eq.nombre;
       d.querySelectorAll('[data-p]').forEach(function (b) {
-        b.onclick = function () { enviar({accion: 'puntos', equipo: i, delta: parseInt(b.dataset.p, 10)}); };
+        b.onclick = function () { enviar({accion: 'puntos', equipo: i, delta: parseInt(b.dataset.p, 10)}, b); };
       });
       d.querySelectorAll('[data-f]').forEach(function (b) {
-        b.onclick = function () { enviar({accion: 'faltas', equipo: i, delta: parseInt(b.dataset.f, 10)}); };
+        b.onclick = function () { enviar({accion: 'faltas', equipo: i, delta: parseInt(b.dataset.f, 10)}, b); };
       });
       cont.appendChild(d);
     });
@@ -276,7 +302,7 @@ function pintar(estado) {
     fx.innerHTML = '';
     estado.sonidos.forEach(function (_, i) {
       var b = document.createElement('button');
-      b.onclick = function () { enviar({accion: 'sonido', slot: i}); };
+      b.onclick = function () { enviar({accion: 'sonido', slot: i}, b); };
       fx.appendChild(b);
     });
   }
@@ -298,10 +324,12 @@ function refrescar() {
     .then(function () { enVuelo = false; });
 }
 
-if (!pin) gate(true);
+if (!pin) gate(true); else mantenerPantallaViva();
 refrescar();
 setInterval(function () { if (!document.hidden) refrescar(); }, 1000);
-document.addEventListener('visibilitychange', function () { if (!document.hidden) refrescar(); });
+document.addEventListener('visibilitychange', function () {
+  if (!document.hidden) { mantenerPantallaViva(); refrescar(); }
+});
 </script>
 </body>
 </html>
