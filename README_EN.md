@@ -6,8 +6,8 @@
 
 ![Acción Impro](https://img.shields.io/badge/Developed%20by-Acción%20Impro-blue)
 ![License](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey)
-![Version](https://img.shields.io/badge/Version-2.1.0--stable-green)
-![Tests](https://img.shields.io/badge/Tests-169%20automated-brightgreen)
+![Version](https://img.shields.io/badge/Version-2.2.0--stable-green)
+![Tests](https://img.shields.io/badge/Tests-178%20automated-brightgreen)
 
 Professional technical suite designed for **Improvisational Match** shows, theater competitions, and live performing arts events. Developed in Medellín, Colombia, by **Corporación Acción Impro**.
 
@@ -98,6 +98,26 @@ In the **DESIGN** tab you can:
 - Adjust padding, corner radius and positions of the containers.
 - Toggle visibility of elements for "Friendly Matches" (No fouls/No timer).
 
+## 🌐 Web Version (nothing to install)
+
+Alongside the desktop program, the repository ships a **browser version**, meant
+to be published on a website so any company can use it without downloading
+anything.
+
+```
+web/
+  index.html      → operator panel
+  tablero.html    → projector window
+  js/, css/       → code and styles (no dependencies)
+```
+
+- No server, PHP, database or plugins required: they are static files.
+- Everything is stored **in the operator's browser**; nothing goes to the internet.
+- `.json` presets are **interchangeable with the desktop version**.
+- The WiFi phone remote is desktop-only.
+
+Deployment instructions (in Spanish): [`web/LEEME-WORDPRESS.md`](web/LEEME-WORDPRESS.md).
+
 ## 🧱 Project Layout
 
 | File | Contents |
@@ -107,6 +127,7 @@ In the **DESIGN** tab you can:
 | `tablero.py` | Projection rendering engine |
 | `remote_control.py` | WiFi remote control |
 | `pruebas/` | Automated tests |
+| `web/` | Browser version |
 
 The last three modules must ship alongside the main one. If `remote_control.py` is missing the program still starts and only the 📡 REMOTO tab is disabled.
 

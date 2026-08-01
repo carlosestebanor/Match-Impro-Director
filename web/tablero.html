@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tablero Público · Match Impro Director</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%AD%3C/text%3E%3C/svg%3E">
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  canvas { display: block; width: 100vw; height: 100vh; cursor: none; }
+  #pista {
+    position: fixed; inset: auto 0 24px 0; text-align: center;
+    color: #888; font: 14px system-ui, sans-serif; pointer-events: none;
+    transition: opacity .4s; text-shadow: 0 1px 3px #000;
+  }
+  #pista.oculta { opacity: 0; }
+</style>
+</head>
+<body>
+<canvas id="lienzo"></canvas>
+<p id="pista">Arrastra esta ventana al proyector · doble clic o F11 para pantalla completa</p>
+
+<script type="module">
+import { dibujarTablero, prepararLienzo } from './js/tablero.js';
+
+const lienzo = document.getElementById('lienzo');
+const pista = document.getElementById('pista');
+
+let instantanea = null;
+const recursos = { fondo: null, logo: null };
+let urlFondo = '';
+let urlLogo = '';
+
+/* --- Sincronización con el panel ------------------------------------------ */
+const canal = new BroadcastChannel('match-impro-director');
+
+canal.onmessage = (evento) => {
+  const mensaje = evento.data;
+  if (!mensaje) return;
+  if (mensaje.tipo === 'estado') {
+    aplicarEstado(mensaje.datos);
+  } else if (mensaje.tipo === 'cerrar') {
+    window.close();
+  }
+};
+
+function aplicarEstado(datos) {
+  instantanea = datos;
+  // Las imágenes llegan como URL de objeto creadas por el panel: solo se
+  // recargan cuando cambian, no en cada fotograma.
+  sincronizarImagen('fondo', datos.diseno.fondo_path);
+  sincronizarImagen('logo', datos.diseno.logo_path);
+  pintar();
+}
+
+function sincronizarImagen(clave, url) {
+  const actual = clave === 'fondo' ? urlFondo : urlLogo;
+  if ((url || '') === actual) return;
+  if (clave === 'fondo') urlFondo = url || ''; else urlLogo = url || '';
+  if (!url) { recursos[clave] = null; pintar(); return; }
+  const img = new Image();
+  img.onload = pintar;
+  img.onerror = () => { recursos[clave] = null; pintar(); };
+  img.src = url;
+  recursos[clave] = img;
+}
+
+/* --- Dibujo ---------------------------------------------------------------- */
+let pendiente = false;
+function pintar() {
+  if (pendiente) return;
+  pendiente = true;
+  requestAnimationFrame(() => {
+    pendiente = false;
+    if (!instantanea) return;
+    const [ancho, alto, ctx] = prepararLienzo(lienzo);
+    dibujarTablero(ctx, ancho, alto, instantanea, recursos);
+  });
+}
+
+window.addEventListener('resize', pintar);
+
+/* --- Pantalla completa ------------------------------------------------------ */
+function alternarPantallaCompleta() {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen().catch(() => {});
+}
+lienzo.addEventListener('dblclick', alternarPantallaCompleta);
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'F11') { e.preventDefault(); alternarPantallaCompleta(); }
+  if (e.key === 'Escape' && document.fullscreenElement) document.exitFullscreen();
+});
+
+// La pista de ayuda desaparece sola para no molestar durante la función.
+setTimeout(() => pista.classList.add('oculta'), 8000);
+
+/* --- Avisos al panel -------------------------------------------------------- */
+canal.postMessage({ tipo: 'tablero-listo' });
+window.addEventListener('beforeunload', () => canal.postMessage({ tipo: 'tablero-cerrado' }));
+
+// Evita que la pantalla se apague durante el espectáculo.
+if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(() => {});
+</script>
+</body>
+</html>

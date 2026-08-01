@@ -6,8 +6,8 @@
 
 ![Acción Impro](https://img.shields.io/badge/Developed%20by-Acción%20Impro-blue)
 ![License](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey)
-![Version](https://img.shields.io/badge/Version-2.1.0--stable-green)
-![Pruebas](https://img.shields.io/badge/Pruebas-169%20automáticas-brightgreen)
+![Version](https://img.shields.io/badge/Version-2.2.0--stable-green)
+![Pruebas](https://img.shields.io/badge/Pruebas-178%20automáticas-brightgreen)
 
 Software profesional de dirección técnica diseñado específicamente para **Match de Improvisación**, competencias teatrales y eventos de artes escénicas en vivo. Desarrollado en Medellín, Colombia, por la **Corporación Acción Impro**.
 
@@ -98,6 +98,27 @@ En la pestaña **DISEÑO** puedes:
 - Ajustar márgenes (padding), redondez de los contenedores y posiciones.
 - Activar/Desactivar visibilidad de elementos para "Match Amistosos".
 
+## 🌐 Versión Web (sin instalar nada)
+
+Además del programa de escritorio, el repositorio incluye una **versión que
+funciona en el navegador**, pensada para publicarla en un sitio web y que
+cualquier compañía pueda usarla sin descargar nada.
+
+```
+web/
+  index.html      → panel del operador
+  tablero.html    → ventana para el proyector
+  js/, css/       → código y estilos (sin dependencias)
+```
+
+- No necesita servidor, PHP, base de datos ni plugins: son archivos estáticos.
+- Todo se guarda **en el navegador del operador**; nada viaja a internet.
+- Los presets `.json` son **compatibles con la versión de escritorio**.
+- El mando por WiFi desde el celular es exclusivo de la versión de escritorio.
+
+Instrucciones para publicarla en WordPress/Hostinger:
+[`web/LEEME-WORDPRESS.md`](web/LEEME-WORDPRESS.md).
+
 ## 🧱 Estructura del Proyecto
 
 | Archivo | Contenido |
@@ -107,6 +128,7 @@ En la pestaña **DISEÑO** puedes:
 | `tablero.py` | Motor de dibujo de la proyección |
 | `remote_control.py` | Mando a distancia por WiFi |
 | `pruebas/` | Pruebas automáticas |
+| `web/` | Versión para navegador |
 
 Los tres últimos módulos deben viajar junto al principal. Si falta `remote_control.py`, el programa arranca igual y solo se deshabilita la pestaña 📡 REMOTO.
 

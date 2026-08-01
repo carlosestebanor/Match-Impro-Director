@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1a1a1a">
+<title>Match Impro Director · Panel de Control</title>
+<meta name="description" content="Marcador y cronómetro para Match de Improvisación. Gratuito, funciona en el navegador, sin instalar nada. Por Corporación Acción Impro.">
+
+<!-- Al compartir el enlace en WhatsApp, Facebook o Instagram se muestra una
+     tarjeta con esta información. Cambia la URL y la imagen por las tuyas. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Corporación Acción Impro">
+<meta property="og:title" content="Match Impro Director · Marcador gratuito para Match de Improvisación">
+<meta property="og:description" content="Cronómetro, puntos, faltas y efectos de sonido para tu match. Funciona en el navegador, sin instalar nada.">
+<meta property="og:url" content="https://accionimpro.com.co/tablero/">
+<meta property="og:image" content="https://accionimpro.com.co/tablero/portada.png">
+<meta property="og:locale" content="es_CO">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://accionimpro.com.co/tablero/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%AD%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<header class="barra-superior">
+  <span class="marca">🎭 MATCH IMPRO DIRECTOR <small>web</small></span>
+  <button id="btn-deshacer" title="Ctrl+Z">↩ Deshacer</button>
+  <button id="btn-rehacer" title="Ctrl+Y">↪ Rehacer</button>
+  <span class="separador"></span>
+  <button id="btn-exportar" title="Ctrl+S">💾 Guardar preset</button>
+  <button id="btn-importar">📂 Cargar preset</button>
+  <span class="separador"></span>
+  <button id="btn-reiniciar" style="background:#5a3030">🧹 Reiniciar</button>
+  <button id="btn-tablero" style="background:var(--acento);color:#000">🖥 Abrir tablero</button>
+</header>
+
+<main class="contenido">
+
+  <!-- ================= COLUMNA IZQUIERDA ================= -->
+  <div>
+    <section class="tarjeta">
+      <h2>Lo que ve el público</h2>
+      <canvas id="lienzo-previa" title="Clic para abrir el tablero a pantalla completa"></canvas>
+      <div class="pie-previa">
+        <span id="aviso-tablero">El tablero aún no está abierto.</span>
+        <label><input type="checkbox" id="chk-previa" checked> Mostrar</label>
+      </div>
+    </section>
+
+    <section class="tarjeta">
+      <h2>Cronómetro</h2>
+      <div id="reloj">04:00</div>
+      <div class="fila-centrada tiempo-entradas" style="margin:10px 0">
+        <input type="number" id="min" min="0" max="99" value="4" aria-label="Minutos">
+        <span style="align-self:center">:</span>
+        <input type="number" id="seg" min="0" max="59" value="0" aria-label="Segundos">
+        <button id="btn-set">SET</button>
+      </div>
+      <div class="fila-centrada" style="margin-bottom:8px">
+        <button id="btn-inicio" class="btn-grande btn-inicio">▶ INICIO</button>
+        <button id="btn-pausa" class="btn-grande btn-pausa">⏸ PAUSA</button>
+      </div>
+      <div class="fila-centrada">
+        <button data-ajuste="-30">−30s</button>
+        <button data-ajuste="-10">−10s</button>
+        <button data-ajuste="10">+10s</button>
+        <button data-ajuste="30">+30s</button>
+      </div>
+    </section>
+
+    <section class="tarjeta">
+      <h2>Equipos</h2>
+      <div class="fila" style="margin-bottom:10px">
+        <label for="num-equipos" style="color:var(--texto-suave);font-size:12px">Cantidad:</label>
+        <select id="num-equipos"></select>
+        <span style="color:var(--texto-tenue);font-size:12px">máx. 3 faltas por equipo</span>
+      </div>
+      <div id="equipos"></div>
+    </section>
+  </div>
+
+  <!-- ================= COLUMNA DERECHA ================= -->
+  <div>
+    <div class="pestanas" role="tablist">
+      <button role="tab" data-panel="p-fx" aria-selected="true">🔊 Efectos</button>
+      <button role="tab" data-panel="p-diseno" aria-selected="false">🎨 Diseño</button>
+      <button role="tab" data-panel="p-ayuda" aria-selected="false">❔ Ayuda</button>
+    </div>
+
+    <!-- EFECTOS -->
+    <section class="tarjeta" id="p-fx">
+      <h2>Efectos de sonido</h2>
+      <div class="rejilla-fx" id="rejilla-fx"></div>
+      <div class="fila" style="margin-top:10px">
+        <label for="volumen" style="color:var(--texto-suave);font-size:12px">Volumen</label>
+        <input type="range" id="volumen" min="0" max="100" value="80" class="crece">
+        <button id="btn-silenciar">⏹ Silenciar</button>
+      </div>
+      <div id="config-fx" style="margin-top:12px"></div>
+      <p class="ayuda">Los archivos quedan guardados en este navegador: al volver a
+        abrir la página, los efectos siguen cargados. No se sube nada a internet.</p>
+    </section>
+
+    <!-- DISEÑO -->
+    <section class="tarjeta" id="p-diseno" hidden>
+      <h2>Imágenes</h2>
+      <div class="fila" style="margin-bottom:8px">
+        <button id="btn-fondo" class="crece">🖼 Cambiar fondo</button>
+        <button id="btn-quitar-fondo">❌</button>
+      </div>
+      <div class="fila" style="margin-bottom:12px">
+        <button id="btn-logo" class="crece">⭐ Cargar logo</button>
+        <button id="btn-quitar-logo">❌</button>
+      </div>
+
+      <h2>Visibilidad</h2>
+      <div class="interruptores" style="margin-bottom:12px">
+        <label><input type="checkbox" data-flag="ver_timer" checked> Timer</label>
+        <label><input type="checkbox" data-flag="ver_faltas" checked> Faltas</label>
+        <label><input type="checkbox" data-flag="ver_outline" checked> Contorno</label>
+        <label><input type="checkbox" data-flag="ver_barra_color" checked> Barra color</label>
+      </div>
+
+      <h2>Colores</h2>
+      <div class="rejilla-colores" style="margin-bottom:12px">
+        <div><label for="c-nombres">Nombres</label><input type="color" id="c-nombres" data-color="color_nombres"></div>
+        <div><label for="c-puntos">Puntos</label><input type="color" id="c-puntos" data-color="color_puntos"></div>
+        <div><label for="c-faltas">Faltas</label><input type="color" id="c-faltas" data-color="color_faltas"></div>
+        <div><label for="c-caja">Cajas</label><input type="color" id="c-caja" data-color="color_caja"></div>
+        <div><label for="c-timer">Reloj</label><input type="color" id="c-timer" data-color="color_timer"></div>
+        <div><label for="c-alerta">Alerta</label><input type="color" id="c-alerta" data-color="color_alerta"></div>
+      </div>
+
+      <h2>Geometría</h2>
+      <div class="campo">
+        <label for="pos-timer">Base del reloj</label>
+        <select id="pos-timer" class="crece">
+          <option>Arriba</option><option selected>Abajo</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label for="seg-alerta">Alerta (s)</label>
+        <input type="number" id="seg-alerta" min="0" max="60" value="10" class="crece">
+      </div>
+      <div id="sliders"></div>
+
+      <h2 style="margin-top:14px">Tipografías</h2>
+      <div class="campo">
+        <label for="f-nombres">Nombres</label>
+        <select id="f-nombres" class="crece"></select>
+      </div>
+      <div class="campo">
+        <label for="f-puntos">Puntos y reloj</label>
+        <select id="f-puntos" class="crece"></select>
+      </div>
+
+      <button id="btn-restablecer" style="width:100%;margin-top:12px">♻ Restablecer diseño</button>
+    </section>
+
+    <!-- AYUDA -->
+    <section class="tarjeta" id="p-ayuda" hidden>
+      <h2>Cómo usarlo</h2>
+      <p class="ayuda">
+        1. Conecta el proyector o la TV en modo <b>«Extender pantalla»</b>.<br>
+        2. Pulsa <b>🖥 Abrir tablero</b>: se abre una ventana nueva.<br>
+        3. Arrástrala a la pantalla del público y pulsa <kbd>F11</kbd> o haz doble clic.<br>
+        4. Controla todo desde esta ventana.
+      </p>
+
+      <h2 style="margin-top:14px">Atajos de teclado</h2>
+      <table class="atajos">
+        <tr><td><kbd>Espacio</kbd></td><td>Inicia o pausa el cronómetro</td></tr>
+        <tr><td><kbd>1</kbd> … <kbd>6</kbd></td><td>Suma un punto al equipo N</td></tr>
+        <tr><td><kbd>Shift</kbd>+<kbd>1</kbd>…<kbd>6</kbd></td><td>Resta un punto</td></tr>
+        <tr><td><kbd>F1</kbd> … <kbd>F6</kbd></td><td>Marca una falta</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Y</kbd></td><td>Deshacer / rehacer</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Exportar preset</td></tr>
+      </table>
+
+      <h2 style="margin-top:14px">Tus datos</h2>
+      <p class="ayuda">
+        Todo se guarda en <b>tu navegador</b>: nombres, colores, diseño, fondo,
+        logo y efectos. No se envía nada a ningún servidor y funciona sin
+        internet una vez cargada la página.<br><br>
+        Los presets <code>.json</code> son <b>compatibles con la versión de
+        escritorio</b>: puedes preparar el diseño aquí y usarlo allá, o al revés.
+      </p>
+      <button id="btn-borrar-datos" style="width:100%;margin-top:8px;background:#5a3030">
+        🗑 Borrar todos mis datos de este navegador
+      </button>
+
+      <p class="ayuda" style="margin-top:16px;text-align:center">
+        Desarrollado por <b>Corporación Acción Impro</b><br>
+        Medellín, Colombia · Licencia CC BY 4.0<br>
+        <a href="https://accionimpro.com.co/" style="color:var(--acento)">accionimpro.com.co</a>
+      </p>
+    </section>
+  </div>
+</main>
+
+<div id="estado">Listo.</div>
+
+<input type="file" id="entrada-imagen" accept="image/*" hidden>
+<input type="file" id="entrada-audio" accept="audio/*" hidden>
+<input type="file" id="entrada-preset" accept=".json,application/json" hidden>
+
+<script type="module" src="js/panel.js"></script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+/*
+ * MATCH IMPRO DIRECTOR :: ESTILOS DEL PANEL WEB
+ * Corporación Acción Impro · Medellín, Colombia · 2026 · CC BY 4.0
+ *
+ * Los grises de texto están elegidos para superar el contraste mínimo AA
+ * (4.5:1): el panel se opera en salas a oscuras.
+ */
+
+:root {
+  --fondo: #1a1a1a;
+  --panel: #222;
+  --fila: #2e2e2e;
+  --borde: #3a3a3a;
+  --acento: #00d4ff;
+  --texto: #fff;
+  --texto-suave: #c4c4c4;
+  --texto-tenue: #a8a8a8;
+  --ok: #5fe08a;
+  --alerta: #ffd166;
+  --error: #ff7b72;
+  --verde: #1d7a4a;
+  --rojo: #a32d2d;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: -apple-system, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 14px;
+}
+
+button {
+  font: inherit; font-weight: 700; color: var(--texto);
+  background: var(--fila); border: 1px solid var(--borde); border-radius: 8px;
+  padding: 9px 12px; cursor: pointer; touch-action: manipulation;
+}
+button:hover:not(:disabled) { background: #3a3a3a; }
+button:active:not(:disabled) { transform: scale(.97); }
+button:disabled { opacity: .35; cursor: default; }
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--acento); outline-offset: 2px;
+}
+
+input, select {
+  font: inherit; background: #111; color: var(--texto);
+  border: 1px solid var(--borde); border-radius: 6px; padding: 7px;
+}
+input[type="color"] { padding: 2px; height: 34px; cursor: pointer; }
+input[type="range"] { accent-color: var(--acento); padding: 0; }
+
+/* ---------- Estructura ---------- */
+.barra-superior {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  padding: 10px 14px; background: #141414; border-bottom: 1px solid var(--borde);
+  position: sticky; top: 0; z-index: 10;
+}
+.barra-superior .marca {
+  font-weight: 800; letter-spacing: .5px; margin-right: auto;
+  display: flex; align-items: center; gap: 8px;
+}
+.barra-superior .marca small { color: var(--texto-tenue); font-weight: 400; }
+.separador { width: 1px; align-self: stretch; background: var(--borde); margin: 0 4px; }
+
+.contenido {
+  display: grid; grid-template-columns: minmax(320px, 1fr) minmax(280px, 380px);
+  gap: 14px; padding: 14px; align-items: start;
+}
+@media (max-width: 860px) { .contenido { grid-template-columns: 1fr; } }
+
+.tarjeta {
+  background: var(--panel); border: 1px solid var(--borde);
+  border-radius: 12px; padding: 12px; margin-bottom: 14px;
+}
+.tarjeta h2 {
+  font-size: 11px; letter-spacing: 1.5px; color: var(--acento);
+  margin: 0 0 10px; text-transform: uppercase;
+}
+
+/* ---------- Vista previa ---------- */
+#lienzo-previa {
+  width: 100%; aspect-ratio: 16 / 9; display: block;
+  background: #000; border: 1px solid var(--borde); border-radius: 8px;
+  cursor: pointer;
+}
+.pie-previa {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 8px; margin-top: 8px; color: var(--texto-tenue); font-size: 12px;
+}
+
+/* ---------- Cronómetro ---------- */
+#reloj {
+  font-family: ui-monospace, Consolas, monospace; font-size: 54px; font-weight: 800;
+  text-align: center; color: var(--acento); letter-spacing: 2px; line-height: 1.1;
+}
+#reloj.alerta { color: var(--error); }
+#reloj.corriendo { color: var(--ok); }
+.fila { display: flex; gap: 8px; align-items: center; }
+.fila > .crece { flex: 1; }
+.fila-centrada { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.tiempo-entradas input { width: 62px; text-align: center; font-size: 18px; }
+.btn-grande { padding: 14px 18px; font-size: 15px; }
+.btn-inicio { background: var(--verde); }
+.btn-pausa { background: #8a6d1f; }
+
+/* ---------- Equipos ---------- */
+.equipo {
+  background: var(--fila); border-radius: 10px; padding: 10px;
+  margin-bottom: 10px; border-left: 6px solid #555;
+}
+.equipo .cabecera { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.equipo .cabecera .indice { color: var(--texto-tenue); font-size: 12px; width: 14px; }
+.equipo .cabecera input[type="text"] {
+  flex: 1; text-align: center; font-weight: 800; font-size: 15px;
+}
+.equipo .controles { display: flex; gap: 8px; align-items: center; }
+.equipo .puntos {
+  font-size: 34px; font-weight: 800; color: var(--acento);
+  min-width: 62px; text-align: center; font-variant-numeric: tabular-nums;
+}
+.btn-punto { font-size: 22px; min-width: 54px; padding: 10px 0; }
+.luces { display: flex; gap: 5px; margin: 0 6px; }
+.luz { width: 14px; height: 14px; border-radius: 50%; background: #555; }
+.btn-falta { background: #b93b3b; margin-left: auto; }
+.btn-quitar-falta { font-size: 11px; font-weight: 400; color: var(--texto-tenue); }
+
+/* ---------- Efectos ---------- */
+.rejilla-fx { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.rejilla-fx button { min-height: 58px; font-size: 12px; padding: 6px; }
+.rejilla-fx button.sonando { box-shadow: 0 0 0 2px var(--acento) inset; }
+
+/* ---------- Diseño ---------- */
+.campo { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.campo label { width: 132px; color: var(--texto-suave); font-size: 12px; flex: none; }
+.campo input[type="range"] { flex: 1; }
+.campo .valor {
+  width: 46px; text-align: right; color: var(--texto-tenue);
+  font-size: 12px; font-variant-numeric: tabular-nums;
+}
+.rejilla-colores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.rejilla-colores label { font-size: 11px; color: var(--texto-suave); display: block; margin-bottom: 3px; }
+.rejilla-colores input { width: 100%; }
+.interruptores { display: flex; flex-wrap: wrap; gap: 12px; }
+.interruptores label { font-size: 12px; color: var(--texto-suave); cursor: pointer; }
+
+/* ---------- Pestañas ---------- */
+.pestanas { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+.pestanas button {
+  background: transparent; border: 1px solid transparent; color: var(--texto-tenue);
+  font-size: 12px; padding: 7px 11px;
+}
+.pestanas button[aria-selected="true"] {
+  background: var(--panel); border-color: var(--borde); color: var(--acento);
+}
+[hidden] { display: none !important; }
+
+/* ---------- Barra de estado ---------- */
+#estado {
+  position: sticky; bottom: 0; padding: 9px 14px; background: #141414;
+  border-top: 1px solid var(--borde); color: var(--texto-tenue); font-size: 13px;
+}
+#estado.ok { color: var(--ok); }
+#estado.alerta { color: var(--alerta); }
+#estado.error { color: var(--error); }
+
+.ayuda { color: var(--texto-tenue); font-size: 12px; line-height: 1.6; }
+.ayuda kbd {
+  background: #111; border: 1px solid var(--borde); border-radius: 4px;
+  padding: 1px 5px; font-family: ui-monospace, monospace; color: var(--alerta);
+}
+table.atajos { width: 100%; border-collapse: collapse; font-size: 12px; }
+table.atajos td { padding: 4px 0; color: var(--texto-suave); }
+table.atajos td:first-child { width: 45%; }

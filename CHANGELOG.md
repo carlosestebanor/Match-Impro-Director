@@ -4,6 +4,32 @@ Todas las novedades relevantes de **Match Impro Director**.
 
 ---
 
+## [2.2.0] — 2026
+
+### 🌐 Versión web
+
+- **Nueva versión para navegador** en `web/`: panel del operador y ventana de
+  tablero, escritos en HTML/CSS/JS sin dependencias ni servidor. Pensada para
+  publicarla en un sitio web y que cualquier compañía la use sin instalar nada.
+- **Mismo motor de dibujo y mismas proporciones** que la versión de escritorio.
+- **Presets `.json` intercambiables** entre ambas versiones. Una prueba
+  automática comprueba que los campos no se desincronicen.
+- **Todo se guarda en el navegador** (equipos, diseño, fondo, logo y efectos,
+  estos últimos en IndexedDB). Nada se envía a ningún servidor.
+- Guía de publicación en WordPress/Hostinger: `web/LEEME-WORDPRESS.md`.
+- El mando por WiFi desde el celular sigue siendo exclusivo del escritorio:
+  una página web no puede abrir un servidor en la red local.
+
+### 🐛 Correcciones
+
+- En el modelo JavaScript, los campos decimales del diseño se truncaban a
+  entero: `Number.isInteger(1.0)` es `true` en JavaScript, así que el truco de
+  deducir el tipo a partir del valor por defecto —válido en Python— dejaba el
+  zoom, los tamaños y los offsets sin decimales. Ahora las claves enteras se
+  declaran explícitamente.
+
+---
+
 ## [2.1.0] — 2026
 
 Versión centrada en la experiencia de uso durante la función.

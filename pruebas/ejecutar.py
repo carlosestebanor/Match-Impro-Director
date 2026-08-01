@@ -16,7 +16,8 @@ import unittest
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, RAIZ)
 
-MODULOS_SIN_GUI = ["pruebas.test_estado", "pruebas.test_remoto"]
+MODULOS_SIN_GUI = ["pruebas.test_estado", "pruebas.test_remoto",
+                   "pruebas.test_compatibilidad_web"]
 MODULOS_CON_GUI = ["pruebas.test_tablero", "pruebas.test_app"]
 
 
