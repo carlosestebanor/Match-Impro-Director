@@ -1,5 +1,5 @@
 MATCH DE IMPRO - DIRECTOR TÉCNICO
-Versión 1.0 (Build 2026)
+Versión 2.0 (Build 2026)
 Desarrollado para: Corporación Acción Impro (Medellín, Colombia)
 Licencia: Creative Commons Atribución 4.0 (CC BY 4.0)
 
@@ -32,29 +32,47 @@ GUÍA RÁPIDA DE USO
 2. PANTALLA COMPLETA:
    - Una vez la ventana negra esté en el proyector, haz DOBLE CLIC sobre ella
      o presiona F11. Se expandirá automáticamente.
+   - Para salir, presiona ESC o F11 de nuevo.
 
-3. PESTAÑA "EN VIVO":
-   - Cronómetro: Configura minutos/segundos y usa Play/Pausa.
-   - Equipos: Puedes editar los nombres escribiendo directamente en las cajas.
-   - Puntos/Faltas: Usa los botones +/-.
-   - Efectos: Abajo tienes 6 botones para lanzar sonidos instantáneos.
+3. BARRA SUPERIOR (siempre visible):
+   - Deshacer / Rehacer: corrige un punto o una falta mal asignada.
+   - Reiniciar: pone en cero puntos y faltas (pide confirmación).
+   - Guardar / Cargar: presets completos por espectáculo.
+   - Pantalla completa: lo mismo que F11.
 
-4. PESTAÑA "DISEÑO":
-   - Fondo/Logo: Carga imágenes personalizadas.
-   - Geometría: Usa los deslizadores para mover los elementos si tu proyector corta la imagen.
-   - Colores/Fuentes: Personaliza la identidad gráfica del match.
+4. PESTAÑA "EN VIVO":
+   - Cronómetro: configura minutos/segundos, usa Play/Pausa y los botones
+     rápidos de -30s, -10s, +10s y +30s. El reloj grande azul te evita
+     tener que mirar al proyector; se pone rojo en los segundos finales.
+   - Equipos: de 2 a 6. Puedes editar los nombres escribiendo directamente
+     y cambiar el color de cada uno con el cuadrito de la izquierda.
+   - Puntos/Faltas: usa los botones +/- y FALTA.
+   - Efectos: abajo tienes 6 botones para lanzar sonidos instantáneos,
+     con control de volumen y botón para silenciar.
 
-5. PESTAÑA "SONIDOS":
-   - Carga aquí tus archivos MP3 o WAV y asígnaless un nombre para usarlos en vivo.
+5. PESTAÑA "DISEÑO":
+   - Fondo/Logo: carga imágenes personalizadas (la X las quita).
+   - Geometría: usa los deslizadores para mover los elementos si tu proyector
+     corta la imagen.
+   - Colores/Fuentes: personaliza la identidad gráfica del match.
+   - Visibilidad: apaga el timer, las faltas o la barra de color para
+     "Match Amistosos".
+   - Alerta (s): desde cuántos segundos el reloj se pone en color de alerta.
 
-6. PESTAÑA "REMOTO" (Mando por WiFi):
+6. PESTAÑA "SONIDOS":
+   - Carga aquí tus archivos MP3, WAV u OGG y asígnales un nombre para
+     usarlos en vivo. Las rutas quedan guardadas: al reabrir el programa
+     los efectos se recargan solos.
+
+7. PESTAÑA "REMOTO" (Mando por WiFi):
    - Sirve para manejar el marcador desde un celular o tablet.
    - Conecta el computador y el celular a la MISMA red WiFi.
    - Presiona "ENCENDER" y escribe en el navegador del celular la dirección
      que aparece en pantalla (ejemplo: http://192.168.1.20:8770).
    - Ingresa el PIN de 6 dígitos que muestra el panel. El celular lo recuerda.
    - Desde el celular puedes: sumar/restar puntos, marcar y quitar faltas,
-     fijar el cronómetro, dar inicio/pausa y lanzar los 6 efectos de sonido.
+     fijar y ajustar el cronómetro, deshacer la última jugada, lanzar los
+     6 efectos de sonido y silenciarlos.
 
    IMPORTANTE (seguridad):
    - Cualquiera conectado a esa red WiFi puede abrir la página del mando,
@@ -63,6 +81,48 @@ GUÍA RÁPIDA DE USO
    - Si Windows pregunta por el Firewall la primera vez, permite el acceso
      en "redes privadas".
    - Si el puerto está ocupado, cámbialo en la misma pestaña (ej. 8771).
+
+8. PESTAÑA "AYUDA":
+   - Lista completa de atajos de teclado y ruta del archivo de preferencias.
+
+===========================================
+ATAJOS DE TECLADO
+===========================================
+Se ignoran mientras escribes en una casilla de texto.
+
+   Espacio ............. Inicia o pausa el cronómetro
+   1 a 6 ............... Suma un punto al equipo N
+   Shift + 1 a 6 ....... Resta un punto al equipo N
+   F1 a F6 ............. Marca una falta al equipo N
+   Ctrl + Z / Ctrl + Y . Deshacer / rehacer una jugada
+   Ctrl + S ............ Guardar las preferencias ahora
+   Ctrl + R ............ Reiniciar el marcador
+   F11 o doble clic .... Pantalla completa del tablero
+   Esc ................. Salir de pantalla completa
+
+===========================================
+TUS AJUSTES SE GUARDAN SOLOS
+===========================================
+El diseño, los nombres y colores de los equipos, el volumen y las rutas de
+los efectos se guardan automáticamente y se recuperan al abrir el programa.
+La ruta exacta del archivo aparece en la pestaña "AYUDA".
+
+Si además quieres tener una configuración distinta por espectáculo, usa
+"Guardar" y "Cargar" en la barra superior.
+
+===========================================
+NOVEDADES DE LA VERSIÓN 2.0
+===========================================
+- El tablero es mucho más ligero: el cronómetro ya no consume CPU
+  redibujando toda la pantalla cada segundo.
+- El cronómetro ya no se atrasa en matches largos.
+- Deshacer y rehacer jugadas.
+- Hasta 6 equipos, cada uno con su color.
+- Todo se guarda solo, más presets por espectáculo.
+- Atajos de teclado y reloj grande en el panel.
+- Volumen y silencio para los efectos.
+- Alerta de color en los segundos finales.
+- Pantalla completa compatible con Windows, Linux y macOS.
 
 ===========================================
 CRÉDITOS

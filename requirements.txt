@@ -1,0 +1,8 @@
+# Dependencias de Match Impro Director
+# Instalación:  pip install -r requirements.txt
+#
+# El control remoto, el guardado y el cronómetro usan solo la librería
+# estándar de Python: no añaden dependencias.
+
+pillow>=10.0.0   # Fondos y logos del tablero
+pygame>=2.5.0    # Efectos de sonido

@@ -97,7 +97,8 @@ PAGINA_HTML = """<!doctype html>
   #reloj.corriendo { color: #00ff88; }
   .fila { display: flex; gap: 8px; align-items: center; }
   .fila > * { flex: 1; }
-  .equipo { background: #262626; border-radius: 10px; padding: 10px; margin-bottom: 8px; }
+  .equipo { background: #262626; border-radius: 10px; padding: 10px; margin-bottom: 8px;
+            border-left: 6px solid #555; }
   .equipo .nombre { font-weight: 800; text-align: center; margin-bottom: 8px; word-break: break-word; }
   .puntos { font-size: 34px; font-weight: 800; text-align: center; color: #ffcc00; min-width: 64px; }
   .btn-p { font-size: 24px; max-width: 76px; }
@@ -130,20 +131,30 @@ PAGINA_HTML = """<!doctype html>
     <input id="seg" type="number" min="0" max="59" inputmode="numeric" placeholder="seg">
     <button class="gris" onclick="fijarTiempo()">SET</button>
   </div>
-  <div class="fila">
+  <div class="fila" style="margin-bottom:8px">
     <button class="verde" onclick="enviar({accion:'timer_start'})">▶ INICIO</button>
     <button class="ambar" onclick="enviar({accion:'timer_pause'})">⏸ PAUSA</button>
+  </div>
+  <div class="fila">
+    <button class="gris" style="font-size:13px" onclick="enviar({accion:'timer_ajustar',segundos:-30})">−30s</button>
+    <button class="gris" style="font-size:13px" onclick="enviar({accion:'timer_ajustar',segundos:-10})">−10s</button>
+    <button class="gris" style="font-size:13px" onclick="enviar({accion:'timer_ajustar',segundos:10})">+10s</button>
+    <button class="gris" style="font-size:13px" onclick="enviar({accion:'timer_ajustar',segundos:30})">+30s</button>
   </div>
 </section>
 
 <section>
   <div class="titulo">EQUIPOS</div>
   <div id="equipos"></div>
+  <button id="btn-deshacer" class="gris" style="width:100%;font-size:13px"
+          onclick="enviar({accion:'deshacer'})">↩ DESHACER ÚLTIMA JUGADA</button>
 </section>
 
 <section>
   <div class="titulo">EFECTOS DE SONIDO</div>
   <div class="grid-fx" id="fx"></div>
+  <button class="gris" style="width:100%;margin-top:8px;font-size:13px"
+          onclick="enviar({accion:'detener_sonidos'})">⏹ SILENCIAR</button>
 </section>
 
 <div id="gate">
@@ -218,10 +229,13 @@ function pintar(estado) {
     && previo.equipos.length === estado.equipos.length
     && previo.equipos.every(function (e, i) { return e.nombre === estado.equipos[i].nombre; });
 
+  var maxFaltas = estado.max_faltas || 3;
   var cont = document.getElementById('equipos');
   if (!mismaEstructura) {
     cont.innerHTML = '';
     estado.equipos.forEach(function (eq, i) {
+      var puntos = '';
+      for (var k = 0; k < maxFaltas; k++) puntos += '<i class="punto"></i>';
       var d = document.createElement('div');
       d.className = 'equipo';
       d.innerHTML =
@@ -231,7 +245,7 @@ function pintar(estado) {
           '<div class="puntos"></div>' +
           '<button class="btn-p gris" data-p="1">+</button>' +
         '</div>' +
-        '<div class="faltas"><i class="punto"></i><i class="punto"></i><i class="punto"></i></div>' +
+        '<div class="faltas">' + puntos + '</div>' +
         '<div class="fila" style="margin-top:8px">' +
           '<button class="gris" data-f="-1" style="font-size:12px">QUITAR FALTA</button>' +
           '<button class="rojo" data-f="1">FALTA</button>' +
@@ -249,11 +263,13 @@ function pintar(estado) {
   estado.equipos.forEach(function (eq, i) {
     var caja = cont.children[i];
     if (!caja) return;
+    caja.style.borderLeftColor = eq.color || '#555';
     caja.querySelector('.puntos').textContent = eq.puntos;
     caja.querySelectorAll('.punto').forEach(function (p, k) {
       p.classList.toggle('on', k < eq.faltas);
     });
   });
+  document.getElementById('btn-deshacer').disabled = !estado.puede_deshacer;
 
   var fx = document.getElementById('fx');
   if (fx.children.length !== estado.sonidos.length) {
@@ -339,7 +355,13 @@ class _ManejadorRemoto(BaseHTTPRequestHandler):
             if not self._pin_valido():
                 self._json(401, {"error": "pin"})
                 return
-            self._json(200, self.server.control.leer_estado())
+            try:
+                estado = self.server.control.leer_estado()
+            except Exception:
+                # El panel está en mitad de un cambio: el celular reintenta en 1 s.
+                self._json(503, {"error": "ocupado"})
+                return
+            self._json(200, estado)
         else:
             self._json(404, {"error": "no encontrado"})
 
